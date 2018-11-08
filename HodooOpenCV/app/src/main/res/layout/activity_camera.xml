@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+        <variable
+            name="activity"
+            type="com.ahqlab.hodooopencv.activity.CameraActivity"/>
+    </data>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <com.ahqlab.hodooopencv.view.HodooJavaCamera
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/hodoo_camera_view"/>
+        <com.ahqlab.hodooopencv.view.MaskView
+            android:id="@+id/mask_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#1acc0000"
+            android:visibility="invisible"
+            >
+            <LinearLayout
+                android:layout_gravity="center_horizontal|bottom"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+                <Button
+                    android:id="@+id/re_capture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{activity::onClick}"
+                    android:text="다시찍기"/>
+                <Button
+                    android:id="@+id/use_picture"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:onClick="@{activity::onClick}"
+                    android:text="사진사용"/>
+
+            </LinearLayout>
+
+        </com.ahqlab.hodooopencv.view.MaskView>
+
+        <ImageView
+            android:layout_centerHorizontal="true"
+            android:id="@+id/take_picture"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/circle_btn"
+            android:onClick="@{activity::onClick}"/>
+
+    </RelativeLayout>
+
+</layout>

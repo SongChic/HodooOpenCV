@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <data>
+
+    </data>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/result_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"/>
+
+        <ListView
+            android:id="@+id/color_list"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@android:color/white"/>
+
+        <FrameLayout
+            android:id="@+id/progress_wrap"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#80000000">
+            <ProgressBar
+                android:layout_gravity="center"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@android:color/white"
+                style="?android:attr/progressBarStyle"/>
+        </FrameLayout>
+
+    </RelativeLayout>
+
+</layout>
