@@ -15,6 +15,13 @@
             android:layout_centerHorizontal="true"/>
 
         <ListView
+            android:id="@+id/combur_list"
+            android:layout_alignParentBottom="true"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:background="@android:color/white"/>
+        <ListView
+            android:visibility="invisible"
             android:id="@+id/color_list"
             android:layout_alignParentBottom="true"
             android:layout_width="match_parent"

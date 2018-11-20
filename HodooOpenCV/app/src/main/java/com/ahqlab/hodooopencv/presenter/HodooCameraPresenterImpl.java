@@ -16,6 +16,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -24,6 +25,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
 
 public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter {
     private final String TAG = HodooCameraPresenterImpl.class.getSimpleName();
@@ -71,19 +74,37 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
                     outputProcMat = new Mat(4, 1, CvType.CV_32FC2);
 
                     //왼쪽 위, 오른쪽 위, 오른쪽 아래, 왼쪽 아래
+
+//                    Imgproc.rectangle(inputMat, point2, point4, new Scalar(0, 0, 255), -1);
+//                    Bitmap bitmaps = Bitmap.createBitmap(inputMat.cols(), inputMat.rows(), Bitmap.Config.ARGB_8888 );
+//                    Utils.matToBitmap(inputMat, bitmaps);
+//                    mView.setWrappingImg(bitmaps);
+//                    if ( DEBUG ) return;
+
                     inputProcMat.put(0, 0, point2.x, point2.y, point1.x, point1.y, point4.x, point4.y, point3.x, point3.y);
+
                     outputProcMat.put(0, 0, 0, 0, inputMat.cols() - 1, 0, inputMat.cols() - 1, inputMat.rows() - 1, 0, inputMat.rows() - 1);
 
-                    int originWidth = inputMat.width();
-                    double x2 = originWidth - point2.x - (point2.x + point1.x);
+                    double w1 = Math.sqrt( Math.pow(point4.x - point3.x, 2)
+                            + Math.pow(point4.x - point3.x, 2) );
+                    double w2 = Math.sqrt( Math.pow(point1.x - point2.x, 2)
+                            + Math.pow(point1.x - point2.x, 2) );
 
-                    Size point = new Size(inputMat.width() - point2.x + point1.x, inputMat.height() - point3.y + point4.y);
+                    double h1 = Math.sqrt( Math.pow(point1.y - point4.y, 2)
+                            + Math.pow(point1.y - point4.y, 2) );
+                    double h2 = Math.sqrt( Math.pow(point2.y - point3.y, 2)
+                            + Math.pow(point2.y - point3.y, 2) );
+
+                    double maxWidth = (w1 < w2) ? w1 : w2;
+                    double maxHeight = (h1 < h2) ? h1 : h2;
+
+                    Size point = new Size(maxWidth, maxHeight);
 
                     mTransMat = Imgproc.getPerspectiveTransform(inputProcMat, outputProcMat);
                     Imgproc.warpPerspective(inputMat, resultMat, mTransMat, inputMat.size());
 //                    Rect box = Imgproc.boundingRect();
                     if ( resultMat.width() > resultMat.height() ) {
-                        Bitmap bitmap = Bitmap.createBitmap( resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888 );
+                        Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888 );
                         Utils.matToBitmap(resultMat, bitmap);
                         mView.setWrappingImg(bitmap);
                     }

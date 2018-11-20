@@ -12,4 +12,6 @@ public class HodooFindColor {
     private int red;
     private int green;
     private int blue;
+    private float[] hsv;
+
 }

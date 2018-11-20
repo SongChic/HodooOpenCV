@@ -60,6 +60,7 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
     private HodooWrapping mWrapping;
     private HodooCameraPresenter.Precenter mPrecenter;
     private Bitmap warppingResult;
+    private ImageView mImageView;
     String[] name = {
             "none",
             "none",
@@ -133,7 +134,8 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
 
         mRgba = mImgGray.clone();
         Imgproc.GaussianBlur(mImgGray, mRgba, new Size(11, 11), 2);
-        Imgproc.Canny(mRgba, mImgResult, 200, 300); //윤곽선만 가져오기
+        Imgproc.Canny(mRgba, mImgResult, 200, 255); //윤곽선만 가져오기
+//        if ( DEBUG ) return mImgResult;
 //        Imgproc.threshold(mRgba, mImgResult, 90, 255, THRESH_BINARY_INV | THRESH_OTSU);
 //        if ( DEBUG ) {
 //            return mImgResult;
@@ -334,6 +336,7 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
         binding.maskView.setVisibility(View.VISIBLE);
         binding.maskView.invalidate();
         warppingResult = resultMat;
+        mImageView = pictureView;
 
 //        new Handler().postDelayed(new Runnable() {
 //            @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -355,6 +358,11 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
             Intent intent = new Intent(CameraActivity.this, AnalysisActivity.class);
             intent.putExtra("path", path);
             startActivity(intent);
+            if ( mImageView != null ) {
+                binding.maskView.removeView(mImageView);
+                binding.maskView.setVisibility(View.GONE);
+                mImageView = null;
+            }
         } else {
             Toast.makeText(this, "사진 저장에 실패했습니다.\n잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
         }

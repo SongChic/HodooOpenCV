@@ -47,6 +47,9 @@ public class ColorListAdapter extends BaseAdapter {
             holder.colorBox = convertView.findViewById(R.id.color_box);
             holder.index = convertView.findViewById(R.id.index);
             holder.colorCode = convertView.findViewById(R.id.color_code);
+            holder.hueColor = convertView.findViewById(R.id.hue_color);
+            holder.saturationColor = convertView.findViewById(R.id.saturation_color);
+            holder.valueColor = convertView.findViewById(R.id.value_color);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -55,11 +58,18 @@ public class ColorListAdapter extends BaseAdapter {
         holder.colorBox.setBackgroundColor(Color.parseColor(hex) );
         holder.index.setText( String.valueOf(mColors.get(position).getIndex()) );
         holder.colorCode.setText(hex);
+        float[] hsv = mColors.get(position).getHsv();
+        holder.hueColor.setText( "H : " + String.valueOf( (int) hsv[0] ) +"˚" );
+        holder.saturationColor.setText( "S : " + String.format("%.1f", (hsv[1] * 100)) +"%" );
+        holder.valueColor.setText( "V : " + String.format("%.1f", (hsv[2] * 100)) +"%" );
         return convertView;
     }
     private class ViewHolder {
         private View colorBox;
         private TextView index;
         private TextView colorCode;
+        private TextView hueColor;
+        private TextView saturationColor;
+        private TextView valueColor;
     }
 }
