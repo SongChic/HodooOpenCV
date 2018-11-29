@@ -482,7 +482,7 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 //            }
 
             startPoint = 180;
-            litmusMargin = 120;
+            litmusMargin = 140;
             litmusWidth = 320;
 
             for ( int i = 0; i < litmusBoxNum; i++ ) {
