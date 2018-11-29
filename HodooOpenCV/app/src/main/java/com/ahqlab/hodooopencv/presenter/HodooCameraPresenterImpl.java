@@ -16,7 +16,6 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -36,15 +35,41 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
         mView.setPresenter(this);
     }
 
+
     @Override
     public void wrappingProcess(HodooWrapping wrapping) {
 
         MatOfPoint2f approxCurve = new MatOfPoint2f();
-        Mat inputMat = Imgcodecs.imread(wrapping.getFileName(), Imgcodecs.CV_LOAD_IMAGE_COLOR), grayMat, tempMat, contourMat, inputProcMat, outputProcMat, mTransMat, resultMat;
+//        Mat inputMat = Imgcodecs.imread(wrapping.getFileName(), Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        Mat inputMat = Imgcodecs.imread(wrapping.getFileName(), Imgcodecs.CV_LOAD_IMAGE_COLOR);
+
+        Mat grayMat, tempMat, contourMat, inputProcMat, outputProcMat, mTransMat, resultMat;
         Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_BGR2RGBA);
 
-        tempMat = contourMat = resultMat = new Mat();
-        grayMat = inputMat.clone();
+        grayMat = tempMat = contourMat = resultMat = new Mat();
+        inputMat.copyTo(grayMat);
+
+        /* 테스트 코드 (s) */
+//        inputProcMat = new Mat(4, 1, CvType.CV_32FC2);
+//        outputProcMat = new Mat(4, 1, CvType.CV_32FC2);
+//
+////        inputProcMat.put(0, 0, point2.x, point2.y, point1.x, point1.y, point4.x, point4.y, point3.x, point3.y);
+//        inputProcMat.put(0, 0, wrapping.getTl().x, wrapping.getTl().y, wrapping.getTr().x, wrapping.getTr().y, wrapping.getBr().x, wrapping.getBr().y, wrapping.getBl().x, wrapping.getBl().y);
+//        outputProcMat.put(0, 0, 0, 0, inputMat.cols() - 1, 0, inputMat.cols() - 1, inputMat.rows() - 1, 0, inputMat.rows() - 1);
+//
+//
+//        mTransMat = Imgproc.getPerspectiveTransform(inputProcMat, outputProcMat);
+//        Imgproc.warpPerspective(inputMat, resultMat, mTransMat, inputMat.size());
+//
+//        if ( resultMat.width() > resultMat.height() ) {
+//            Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888 );
+//            Utils.matToBitmap(resultMat, bitmap);
+//            mView.setWrappingImg(bitmap);
+//        }
+//
+//        if ( DEBUG ) return;
+        /* 테스트 코드 (e) */
+
         Imgproc.cvtColor(inputMat, grayMat, Imgproc.COLOR_BGRA2GRAY);
         Imgproc.GaussianBlur(grayMat, grayMat, new Size(11, 11), 2);
         Imgproc.Canny(grayMat, tempMat, 80, 120);
@@ -60,10 +85,8 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
 
             Rect rect = Imgproc.boundingRect(cnt);
             if (rect.width > 300) { // 일정 면적일 경우 실행
-//                Imgproc.drawContours(mImage, contours, -1, new Scalar(255, 255, 255), Core.FILLED);
-//                mRgba = mImgInput.clone();
-
-                if ( approxCurve.total() == 4 ) {
+                Log.e(TAG, String.format("approxCurve : %d", approxCurve.total()));
+                if ( approxCurve.total() >= 4 ) {
                     Point point1 = approxCurve.toArray()[0]; //오른쪽위
                     Point point2 = approxCurve.toArray()[1]; //왼쪽위
                     Point point3 = approxCurve.toArray()[2]; //왼쪽아래
@@ -72,14 +95,6 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
 
                     inputProcMat = new Mat(4, 1, CvType.CV_32FC2);
                     outputProcMat = new Mat(4, 1, CvType.CV_32FC2);
-
-                    //왼쪽 위, 오른쪽 위, 오른쪽 아래, 왼쪽 아래
-
-//                    Imgproc.rectangle(inputMat, point2, point4, new Scalar(0, 0, 255), -1);
-//                    Bitmap bitmaps = Bitmap.createBitmap(inputMat.cols(), inputMat.rows(), Bitmap.Config.ARGB_8888 );
-//                    Utils.matToBitmap(inputMat, bitmaps);
-//                    mView.setWrappingImg(bitmaps);
-//                    if ( DEBUG ) return;
 
                     inputProcMat.put(0, 0, point2.x, point2.y, point1.x, point1.y, point4.x, point4.y, point3.x, point3.y);
 
@@ -98,11 +113,9 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
                     double maxWidth = (w1 < w2) ? w1 : w2;
                     double maxHeight = (h1 < h2) ? h1 : h2;
 
-                    Size point = new Size(maxWidth, maxHeight);
-
                     mTransMat = Imgproc.getPerspectiveTransform(inputProcMat, outputProcMat);
                     Imgproc.warpPerspective(inputMat, resultMat, mTransMat, inputMat.size());
-//                    Rect box = Imgproc.boundingRect();
+
                     if ( resultMat.width() > resultMat.height() ) {
                         Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888 );
                         Utils.matToBitmap(resultMat, bitmap);

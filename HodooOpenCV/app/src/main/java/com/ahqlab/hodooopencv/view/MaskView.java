@@ -10,12 +10,13 @@ import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.ahqlab.hodooopencv.domain.HodooRect;
 
 import java.util.List;
 
-public class MaskView extends FrameLayout {
+public class MaskView extends RelativeLayout {
     private final String TAG = MaskView.class.getSimpleName();
 
     private float mX1, mX2, mY1, mY2 = -1;

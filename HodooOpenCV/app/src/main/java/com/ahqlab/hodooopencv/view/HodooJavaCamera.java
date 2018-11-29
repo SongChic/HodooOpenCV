@@ -2,17 +2,26 @@ package com.ahqlab.hodooopencv.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.SurfaceHolder;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import org.opencv.android.JavaCameraView;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.List;
+
+import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
 
 public class HodooJavaCamera extends JavaCameraView implements Camera.PictureCallback {
     public interface CameraCallback {
@@ -23,12 +32,81 @@ public class HodooJavaCamera extends JavaCameraView implements Camera.PictureCal
     private String mPictureFileName;
     private String mFolerName;
     private CameraCallback mCameraCallback;
+    public Camera camera;
+
     public HodooJavaCamera(Context context, int cameraId) {
         super(context, cameraId);
     }
 
     public HodooJavaCamera(Context context, AttributeSet attrs) {
         super(context, attrs);
+        camera = mCamera;
+//        mCamera.setDisplayOrientation(90);
+//        ViewGroup.LayoutParams params = this.getLayoutParams();
+//        params.width = 800;
+//
+////        FrameLayout.LayoutParams frameParams = (FrameLayout.LayoutParams) this.getLayoutParams();
+////
+////        frameParams.width = 800; //For argument's sake making this ~double the width of the display. Same result occurs if I use MATCH_PARENT
+//        params.height = FrameLayout.LayoutParams.MATCH_PARENT;
+//        this.setLayoutParams(params);
+    }
+
+//    @Override
+//    public void onPreviewFrame(byte[] data, Camera camera) {
+//         Log.d("Camera", "Got a camera frame");
+//        if (isPreviewRunning)  {
+//
+//
+//            Canvas canvas = null;
+//
+//            if (mHolder == null) {
+//                return;
+//            }
+//
+//            try {
+//                synchronized (mHolder) {
+//                    canvas = mHolder.lockCanvas(null);
+//                    int canvasWidth = canvas.getWidth();
+//                    int canvasHeight = canvas.getHeight();
+//
+////                decodeYUV(rgbints, data, width, height);
+//
+//                    // draw the decoded image, centered on canvas
+//                    canvas.drawBitmap(rgbints, 0, width, canvasWidth-((width+canvasWidth)>>1), canvasHeight-((height+canvasHeight)>>1), width, height, false, null);
+//
+//                    // use some color filter
+//                    canvas.drawColor(mMultiplyColor, PorterDuff.Mode.MULTIPLY);
+//
+//                }
+//            }  catch (Exception e){
+//                e.printStackTrace();
+//            } finally {
+//                // do this in a finally so that if an exception is thrown
+//                // during the above, we don't leave the Surface in an
+//                // inconsistent state
+//                if (canvas != null) {
+//                    mHolder.unlockCanvasAndPost(canvas);
+//                }
+//            }
+//        }
+//
+//    }
+
+    public void setRotationCamera ( int degree ) {
+        mCamera.setDisplayOrientation(degree);
+    }
+
+    public void getResolutionList() {
+        if ( mCamera != null ) {
+            List<Camera.Size> resolutionList = mCamera.getParameters().getSupportedPreviewSizes();
+            for (Camera.Size size : resolutionList) {
+                if (DEBUG)
+                    Log.e(TAG, String.format("opencv parameter width : %d, height : %d", size.width, size.height));
+            }
+        } else {
+            Log.e(TAG, "mCamera null !!!!");
+        }
     }
 
     @Override
@@ -62,7 +140,6 @@ public class HodooJavaCamera extends JavaCameraView implements Camera.PictureCal
             }
             if ( mCameraCallback != null )
                 mCameraCallback.onResult(file.getAbsolutePath());
-//            getContext().sendBroadcast( new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory())));
 
         } catch (java.io.IOException e) {
             Log.e("PictureDemo", "Exception in photoCallback", e);
@@ -70,17 +147,18 @@ public class HodooJavaCamera extends JavaCameraView implements Camera.PictureCal
             mCameraCallback = null;
         }
     }
+    public void setResolution(int width, int height) {
+        disconnectCamera();
+        connectCamera(width, height);
+        enableFpsMeter();
+    }
     public void takePicture(String folder, final String fileName, CameraCallback callback) {
         Log.i(TAG, "Taking picture");
         this.mPictureFileName = fileName;
         mCameraCallback = callback;
         mFolerName = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES) + File.separator + folder;
-        // Postview and jpeg are sent in the same buffers if the queue is not empty when performing a capture.
-        // Clear up buffers to avoid mCamera.takePicture to be stuck because of a memory issue
         mCamera.setPreviewCallback(null);
-
-        // PictureCallback is implemented by the current class
         mCamera.takePicture(null, null, this);
     }
 }

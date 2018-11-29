@@ -16,4 +16,8 @@ public class HodooWrapping {
     private String fileName;
     private Mat target;
     private List<Point> points;
+    private Point tl;
+    private Point tr;
+    private Point bl;
+    private Point br;
 }

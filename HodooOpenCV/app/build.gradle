@@ -50,6 +50,7 @@ dependencies {
 
     /* 레이아웃 API (s) */
     implementation 'com.ssomai:android.scalablelayout:2.1.6'
+
     /* 레이아웃 API (e) */
 
     testImplementation 'junit:junit:4.12'

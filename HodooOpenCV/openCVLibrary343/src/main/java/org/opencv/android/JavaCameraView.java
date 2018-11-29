@@ -173,6 +173,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                         params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
                     }
 
+                    params.setPreviewSize(1920, 1080);
                     mCamera.setParameters(params);
                     params = mCamera.getParameters();
 
@@ -213,6 +214,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
                     /* Finally we are ready to start the preview */
                     Log.d(TAG, "startPreview");
+                    mCamera.setDisplayOrientation(90);
                     mCamera.startPreview();
                 }
                 else

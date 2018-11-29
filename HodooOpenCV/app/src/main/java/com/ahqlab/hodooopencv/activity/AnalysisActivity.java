@@ -1,5 +1,6 @@
 package com.ahqlab.hodooopencv.activity;
 
+import android.content.pm.ActivityInfo;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import com.ahqlab.hodooopencv.domain.HodooFindColor;
 import com.ahqlab.hodooopencv.domain.HsvValue;
 import com.ahqlab.hodooopencv.presenter.AnalysisPresenterImpl;
 import com.ahqlab.hodooopencv.presenter.interfaces.AnalysisPresenter;
+import com.ahqlab.hodooopencv.util.HodooUtil;
 
 import org.opencv.core.Mat;
 
@@ -35,6 +37,7 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_analsis);
         String path = getIntent().getStringExtra("path");
         if ( path == null || path.equals("")) {
@@ -73,8 +76,10 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
 
     @Override
     public void setCombur(List<ComburResult> results) {
-        ComburListAdapter adapter = new ComburListAdapter(this, results);
-        binding.comburList.setAdapter(adapter);
+        binding.comburList.setItem(results);
+
+//        ComburListAdapter adapter = new ComburListAdapter(this, results);
+//        binding.comburList.setAdapter(adapter);
 
 
     }
