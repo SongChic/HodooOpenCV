@@ -7,6 +7,8 @@ import com.ahqlab.hodooopencv.base.BasePresenter;
 import com.ahqlab.hodooopencv.base.BaseView;
 import com.ahqlab.hodooopencv.domain.HodooWrapping;
 
+import org.opencv.core.Mat;
+
 public interface HodooCameraPresenter {
     interface VIew extends BaseView<Precenter> {
         void setWrappingImg(Bitmap resultMat);

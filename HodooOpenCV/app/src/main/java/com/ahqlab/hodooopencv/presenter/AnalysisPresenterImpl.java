@@ -394,15 +394,12 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 //
 ////                Log.e(TAG, String.format("rects.get(i).x : %d", rects.get(i + 1).x - (rects.get(i).x + rects.get(i).width) ));
 //            }
-            for (int i = 0; i < rects.size(); i++) {
-                if ( rects.get(i) == null )
-                    rects.remove(i);
-            }
-//            if ( DEBUG ) return resultMat;
+            if ( DEBUG ) Log.e(TAG, String.format("rects size : %d", rects.size()));
+            if ( rects.size() < 3 )
+                return null;
 
             int litmusWidth = 0, startPoint = 0, litmusMargin = 0, totalWidth = 0, totalHeight = 0, totalMargin = 0, tempX = 0, count = 0, startY = 0, litmusHeight = 0, litmusSpacing = 0;
             for ( int i = 0; i < rects.size(); i++ ) {
-                if ( DEBUG ) Log.e(TAG, String.format("rect w : %d, rect x : %d", rects.get(i).width, rects.get(i).x));
                 if ( i == 0 )
                     startPoint = tempX = rects.get(i).x;
                 else {
@@ -440,46 +437,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 return null;
             litmusWidth = totalWidth / count;
             litmusHeight = totalHeight / count;
-
-
-//            if ( DEBUG ) Log.e(TAG, String.format("startPoint : %d,first x : %d, first width : %d", startPoint, rects.get(0).x, rects.get(0).width));
-//            int firstX = 180, firstW = 325, detectPointX = (firstX + firstW) / 2;
-//            int initStart = 150, x = initStart + detectPointX;
-//            int y = startY + (litmusHeight / 2);
-//            float initHue = 70, abs = 0;
-//
-//            Point test1 = new Point(x, y);
-//            Imgproc.circle(resultMat, test1, 30, new Scalar(255, 180, 180), 20);
-//
-//            double R=0,G=0,B=0;
-//            double[] color = cloneMat.get(y, x);
-//            boolean rotationState = false;
-//            if ( color != null ) {
-//                R = color[0];
-//                G = color[1];
-//                B = color[2];
-//                float[] hsv = new float[3];
-//                Color.RGBToHSV((int) R, (int) G, (int) B, hsv);
-//                if ( initHue - hsv[0] > 0 )
-//                    abs = initHue - hsv[0];
-//                else
-//                    abs = hsv[0] - initHue;
-//                if ( !(abs > 10) && !(abs < -10) )
-//                    Log.e(TAG, "10도 이내");
-//                else {
-//                    Log.e(TAG, "10도 이상");
-//                    Rect firstRect = new Rect(firstX, startY, firstW, litmusHeight);
-//                    rects.add(0, firstRect);
-//                    startPoint = firstRect.x;
-//                    litmusHeight = litmusHeight - 100;
-//
-//                    Mat rotation = Imgproc.getRotationMatrix2D(new Point(resultMat.width() / 2, resultMat.height() / 2), 180, 1);
-//                    Imgproc.warpAffine(resultMat, resultMat, rotation, new Size(resultMat.cols(), resultMat.rows()));
-//                    rotationState = true;
-//                }
-////                if ( initHue )
-//                if ( DEBUG ) Log.e(TAG, String.format("h : %f, s : %f, v : %f", hsv[0], hsv[1] * 100, hsv[2] * 100));
-//            }
 
             startPoint = 180;
             litmusMargin = 140;

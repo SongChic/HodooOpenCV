@@ -10,16 +10,29 @@ import android.util.Log;
 
 import org.opencv.core.DMatch;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfDMatch;
 import org.opencv.core.MatOfKeyPoint;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Scalar;
+import org.opencv.features2d.BFMatcher;
 import org.opencv.features2d.DescriptorExtractor;
 import org.opencv.features2d.DescriptorMatcher;
+import org.opencv.features2d.FastFeatureDetector;
 import org.opencv.features2d.FeatureDetector;
+import org.opencv.features2d.Features2d;
+import org.opencv.features2d.FlannBasedMatcher;
+import org.opencv.features2d.ORB;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
+import static org.opencv.core.Core.NORM_HAMMING;
+import static org.opencv.core.Core.NORM_L2;
 
 public class HodooUtil {
     private static final String TAG = HodooUtil.class.getSimpleName();
@@ -46,8 +59,8 @@ public class HodooUtil {
         long startTime = System.currentTimeMillis();
 
         // Load images to compare
-        Mat img1 = Imgcodecs.imread(filename1, Imgcodecs.CV_LOAD_IMAGE_COLOR);
-        Mat img2 = Imgcodecs.imread(target, Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        Mat img1 = Imgcodecs.imread(target, Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        Mat img2 = Imgcodecs.imread(filename1, Imgcodecs.CV_LOAD_IMAGE_COLOR);
 
         // Declare key point of images
         MatOfKeyPoint keypoints1 = new MatOfKeyPoint();
@@ -56,6 +69,7 @@ public class HodooUtil {
         Mat descriptors2 = new Mat();
 
         // Definition of ORB key point detector and descriptor extractors
+        FastFeatureDetector featureDetector = FastFeatureDetector.create();
         FeatureDetector detector = FeatureDetector.create(FeatureDetector.ORB);
         DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.ORB);
 
@@ -94,7 +108,7 @@ public class HodooUtil {
             // Extract good images (distances are under 10)
             for (int i = 0; i < descriptors1.rows(); i++) {
 //                Imgproc.circle(drawMat, descriptors1.);
-                if ( DEBUG ) Log.e(TAG, String.format("match[i].distance : %f", match[i].distance));
+//                if ( DEBUG ) Log.e(TAG, String.format("match[i].distance : %f", match[i].distance));
                 if (match[i].distance <= 20) {
                     retVal++;
                 }
@@ -103,9 +117,89 @@ public class HodooUtil {
         }
 
         long estimatedTime = System.currentTimeMillis() - startTime;
-        System.out.println("estimatedTime=" + estimatedTime + "ms");
+        MatOfByte drawnMatches = new MatOfByte();
+
+        Mat imgMatches = new Mat();
+        Features2d.drawMatches(img1, keypoints1, img2, keypoints2, matches, imgMatches, new Scalar(0, 255, 0), new Scalar(255, 0, 0), drawnMatches, Features2d.NOT_DRAW_SINGLE_POINTS);
+        Imgcodecs.imwrite(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "result.jpg", imgMatches);
+
 
         return retVal;
+    }
+    public static void compareFeature2 ( String fileName ) {
+        String target = Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "target.jpg";
+        Mat img1 = Imgcodecs.imread(target);
+        Mat img2 = Imgcodecs.imread(fileName);
+        Mat imgMatches = new Mat();
+
+//        ORB orb = ORB.create();
+//
+        MatOfKeyPoint keypoints1 = new MatOfKeyPoint(), keypoints2 = new MatOfKeyPoint();
+        Mat descriptors1 = new Mat(), descriptors2 = new Mat();
+//
+//        orb.detectAndCompute(img1, new Mat(), keypoints1, descriptors1);
+//        orb.detectAndCompute(img2, new Mat(), keypoints2, descriptors2);
+//
+//        BFMatcher matcher = new BFMatcher(NORM_L2, true);
+        MatOfDMatch matches = new MatOfDMatch();
+//        matcher.match(descriptors1, descriptors2, matches, new Mat());
+//
+//        Features2d.drawMatches(img1, keypoints1, img2, keypoints2, matches, imgMatches, new Scalar(0, 255, 0), new Scalar(255, 0, 0), drawnMatches, Features2d.NOT_DRAW_SINGLE_POINTS);
+
+
+//        int num = 500;
+//        MatOfPoint corners = new MatOfPoint();
+//        Imgproc.goodFeaturesToTrack(img1, corners, num, 0.1, 5);
+//        for (int i = 0; i < corners.total(); i++) {
+//            Imgproc.circle(img1, corners.toArray()[i], 5, new Scalar(255, 0, 0), 3);
+//        }
+//        Imgcodecs.imwrite(Environment.getExternalStoragePublicDirectory(
+//                Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "result.jpg", imgMatches);
+//
+//        if ( DEBUG ) return;
+
+        FeatureDetector surf = FeatureDetector.create(FeatureDetector.ORB);
+        DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.ORB);
+
+        surf.detect(img1, keypoints1);
+        surf.detect(img2, keypoints2);
+
+        extractor.compute(img1, keypoints1, descriptors1);
+        extractor.compute(img2, keypoints1, descriptors2);
+        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
+
+
+        matcher.match(descriptors1, descriptors2, matches);
+
+        DMatch[] match = matches.toArray();
+
+        double max_dist = 0; double min_dist = 100;
+        for (int i = 0; i < descriptors1.rows(); i++) {
+            double dist = matches.toArray()[i].distance;
+            if( dist < min_dist ) min_dist = dist;
+            if( dist > max_dist ) max_dist = dist;
+        }
+        List<DMatch> goodMatches = new ArrayList<>();
+        for (int i = 0; i < descriptors1.rows(); i++) {
+            if ( matches.toArray()[i].distance <= Math.max(2*min_dist, 0.02) )
+                goodMatches.add(matches.toArray()[i]);
+        }
+
+        int retVal = 0;
+        if ( DEBUG ) Log.e(TAG, String.format("max_dist : %f, min_dist : %f", max_dist, min_dist));
+        for (int i = 0; i < descriptors1.rows(); i++) {
+            if (match[i].distance <= 30) {
+                retVal++;
+            }
+        }
+        if ( DEBUG ) Log.e(TAG, String.format("two retVal : %d", retVal));
+        MatOfByte drawnMatches = new MatOfByte();
+
+        Features2d.drawMatches(img1, keypoints1, img2, keypoints2, matches, imgMatches, new Scalar(0, 255, 0), new Scalar(255, 0, 0), drawnMatches, Features2d.NOT_DRAW_SINGLE_POINTS);
+        Imgcodecs.imwrite(Environment.getExternalStoragePublicDirectory(
+                Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "result.jpg", imgMatches);
     }
 
 }

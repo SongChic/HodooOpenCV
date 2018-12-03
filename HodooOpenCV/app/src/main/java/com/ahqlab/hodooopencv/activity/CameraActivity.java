@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -46,10 +47,14 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
+import static com.ahqlab.hodooopencv.util.HodooUtil.compareFeature;
+import static com.ahqlab.hodooopencv.util.HodooUtil.compareFeature2;
+import static org.opencv.imgproc.Imgproc.MORPH_ELLIPSE;
 
 public class CameraActivity extends BaseActivity<CameraActivity> implements CameraBridgeViewBase.CvCameraViewListener2, HodooCameraPresenter.VIew {
     private ActivityCameraBinding binding;
@@ -139,8 +144,12 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
         mRgba = mImgGray.clone();
         Imgproc.GaussianBlur(mImgGray, mRgba, new Size(11, 11), 2);
         //50, 120
-        Imgproc.Canny(mRgba, mImgResult, 100, 200); //윤곽선만 가져오기
-        Imgproc.dilate(mImgResult, mImgResult, new Mat(), new Point(-1, -1), 1); //노이즈 제거
+        Imgproc.Canny(mRgba, mImgResult, 100, 150); //윤곽선만 가져오기
+//        Imgproc.dilate(mImgResult, mImgResult, new Mat(), new Point(-1, -1), 1); //노이즈 제거
+        Imgproc.dilate(mImgResult, mImgResult, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(3, 3)), new Point(-1, -1), 3);
+        Imgproc.erode(mImgResult, mImgResult, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(1, 1)), new Point(-1, -1), 3);
+
+//        if ( DEBUG ) return mImgResult;
 
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         cIMG = mImgResult.clone();
@@ -192,9 +201,9 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
         if ( mBlurState ) {
             Imgproc.blur(mImgInput, mImgInput, new Size(100, 100));
         }
-
-//        return mImgInput;
+//        HodooUtil.compareFeature2(mImgInput);
         return mImgInput;
+//        return HodooUtil.compareFeature2(mImgInput);
     }
     private static double angle(Point pt1, Point pt2, Point pt0) {
         double dx1 = pt1.x - pt0.x;
@@ -214,15 +223,17 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    int feature = HodooUtil.compareFeature(fileName);
-                                                if ( DEBUG ) Log.e(TAG, String.format("feature : %d", feature));
+                                    HodooUtil.compareFeature(fileName);
+//                                    if ( DEBUG ) Log.e(TAG, String.format("feature : %d", feature));
 
-                                    if ( feature > 0 ) {
-                                        if ( DEBUG ) Log.e(TAG, "Tow images are same.");
-                                    } else {
-                                        if ( DEBUG ) Log.e(TAG, "Tow images are different.");
-                                    }
-                                    if ( feature > 0 ) {
+
+
+//                                    if ( feature > 0 ) {
+//                                        if ( DEBUG ) Log.e(TAG, "Tow images are same.");
+//                                    } else {
+//                                        if ( DEBUG ) Log.e(TAG, "Tow images are different.");
+//                                    }
+//                                    if ( feature > 0 ) {
                                         mWrapping.setFileName(fileName);
                                         mWrapping.setTr(point1);
                                         mWrapping.setTl(point2);
@@ -230,9 +241,10 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
                                         mWrapping.setBr(point4);
                                         mWrapping.setTarget(mTargetMat);
                                         mPrecenter.wrappingProcess(mWrapping);
-                                    } else {
-                                        Toast.makeText(CameraActivity.this, "리트머스를 검출하지 못했습니다.\n다시 촬영해주세요.", Toast.LENGTH_SHORT).show();
-                                    }
+//                                        compareFeature2(fileName);
+//                                    } else {
+//                                        Toast.makeText(CameraActivity.this, "리트머스를 검출하지 못했습니다.\n다시 촬영해주세요.", Toast.LENGTH_SHORT).show();
+//                                    }
 
                                 }
                             });

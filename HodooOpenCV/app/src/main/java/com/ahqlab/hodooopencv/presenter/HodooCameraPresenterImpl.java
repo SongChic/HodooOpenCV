@@ -86,6 +86,9 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
             Rect rect = Imgproc.boundingRect(cnt);
             if (rect.width > 300) { // 일정 면적일 경우 실행
                 Log.e(TAG, String.format("approxCurve : %d", approxCurve.total()));
+                for (int j = 0; j < approxCurve.total(); j++) {
+                    if ( DEBUG ) Log.e(TAG, String.format("approxCurve = x : %f, y : %f", approxCurve.toArray()[j].x, approxCurve.toArray()[j].y));
+                }
                 if ( approxCurve.total() >= 4 ) {
                     Point point1 = approxCurve.toArray()[0]; //오른쪽위
                     Point point2 = approxCurve.toArray()[1]; //왼쪽위
