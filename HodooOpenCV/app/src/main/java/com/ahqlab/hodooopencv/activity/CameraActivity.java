@@ -8,17 +8,14 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
-import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -36,7 +33,6 @@ import com.ahqlab.hodooopencv.view.HodooJavaCamera;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
-import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -47,13 +43,10 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
-import static com.ahqlab.hodooopencv.util.HodooUtil.compareFeature;
-import static com.ahqlab.hodooopencv.util.HodooUtil.compareFeature2;
 import static org.opencv.imgproc.Imgproc.MORPH_ELLIPSE;
 
 public class CameraActivity extends BaseActivity<CameraActivity> implements CameraBridgeViewBase.CvCameraViewListener2, HodooCameraPresenter.VIew {

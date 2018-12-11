@@ -446,8 +446,16 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 Point a = new Point(startPoint + litmusSpacing, startY);
                 Point b = new Point( startPoint + litmusSpacing + litmusWidth, startY + litmusHeight );
                 Imgproc.rectangle(resultMat, a, b, new Scalar(0, 0, 255), 5);
-                int x = (int) (a.x + b.x) /  2;
+                int x = (int) (a.x + b.x);
                 int y = (int) (a.y + b.y) /  2;
+
+                int tempX2 = (int) (x - b.x);
+                for (int j = (int) a.x; j < a.x + b.x; j++) {
+                    Point point = new Point(j, y);
+                    Imgproc.circle(resultMat, point, 5, new Scalar(0, 0, 255), 5);
+                }
+
+                if ( DEBUG ) return null;
 
                 double R=0, G=0, B=0;
                 double[] color = cloneMat.get(y, x);
