@@ -7,11 +7,15 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -52,7 +56,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
     private List<Point> mPoints;
 
     private Bitmap warppingResult;
-    private boolean mBlurState = false;
+    public boolean mBlurState = false;
 
     private static final int CAMERA_FACING = Camera.CameraInfo.CAMERA_FACING_BACK;
 
@@ -98,6 +102,15 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
 //        bitmap.recycle();
 
 //        binding.imgPreview.setImageBitmap(bitmap);
+    }
+    public void setBitmap ( Bitmap bitmap ) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            if ( bitmap != null ) {
+                Bitmap blurBitmap = blur(this, bitmap);
+                binding.imgPreview.setImageBitmap(blurBitmap);
+            }
+        }
+
     }
     public void updateView () {
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M)
@@ -181,6 +194,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
             public void onClick(View v) {
                 dialog.dismiss();
                 pictureView.setImageBitmap(null);
+                binding.overlay.setVisibility(View.GONE);
             }
         });
         usePicture.requestLayout();
@@ -188,6 +202,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
 
         pictureView.setImageBitmap(resultMat);
         warppingResult = resultMat;
+//        binding.overlay.setVisibility(View.VISIBLE);
         mBlurState = true;
         Log.e(TAG, "setWrappingImg end");
     }
@@ -198,6 +213,8 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
             Intent intent = new Intent(TestCameraActivity.this, AnalysisActivity.class);
             intent.putExtra("path", path);
             startActivity(intent);
+            binding.overlay.setVisibility(View.GONE);
+
 //            if ( mImageView != null ) {
 //                binding.maskView.setVisibility(View.GONE);
 //                mImageView = null;
@@ -211,5 +228,27 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
     @Override
     public void setPresenter(HodooCameraPresenter.Precenter presenter) {
 
+    }
+    private static final float BITMAP_SCALE = 0.4f;
+    private static final float BLUR_RADIUS = 7.5f;
+
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public static Bitmap blur(Context context, Bitmap image) {
+        int width = Math.round(image.getWidth() * BITMAP_SCALE);
+        int height = Math.round(image.getHeight() * BITMAP_SCALE);
+
+        Bitmap inputBitmap = Bitmap.createScaledBitmap(image, width, height, false);
+        Bitmap outputBitmap = Bitmap.createBitmap(inputBitmap);
+
+        RenderScript rs = RenderScript.create(context);
+        ScriptIntrinsicBlur theIntrinsic = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+        Allocation tmpIn = Allocation.createFromBitmap(rs, inputBitmap);
+        Allocation tmpOut = Allocation.createFromBitmap(rs, outputBitmap);
+        theIntrinsic.setRadius(BLUR_RADIUS);
+        theIntrinsic.setInput(tmpIn);
+        theIntrinsic.forEach(tmpOut);
+        tmpOut.copyTo(outputBitmap);
+
+        return outputBitmap;
     }
 }

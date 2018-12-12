@@ -4,6 +4,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.util.Log;
 
@@ -57,11 +58,6 @@ public class RectDrawer {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 if ( path.isConvex() ) canvas.drawPath(path, paint);
             }
-
-
-//            for (int i = 0; i < mPoint.size(); i++) {
-//                canvas.drawCircle((float) (mPoint.get(i).x*scale+yoffset), (float) (mPoint.get(i).y*scale+yoffset), 10, paint);
-//            }
         }
     }
 }

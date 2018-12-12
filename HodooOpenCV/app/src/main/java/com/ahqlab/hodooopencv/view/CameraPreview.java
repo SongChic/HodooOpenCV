@@ -2,6 +2,10 @@ package com.ahqlab.hodooopencv.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
 import android.net.Uri;
@@ -9,6 +13,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -31,6 +36,7 @@ import org.opencv.utils.Converters;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.security.Policy;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,45 +45,6 @@ import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
 import static org.opencv.imgproc.Imgproc.MORPH_ELLIPSE;
 
 public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.PictureCallback {
-
-    @Override
-    public void onPictureTaken(byte[] data, Camera camera) {
-        Log.i(TAG, "Saving a bitmap to file");
-        // The camera preview was automatically stopped. Start it again.
-        mCamera.startPreview();
-        mCamera.setPreviewCallback(this);
-        File folder = new File(mFolerName);
-        if ( !folder.isDirectory() ) {
-            folder.mkdirs(); //폴더 생성
-        }
-
-
-        // Write the image in a file (in jpeg format)
-        try {
-            FileOutputStream fos = new FileOutputStream(mFolerName + mPictureFileName);
-
-            fos.write(data);
-            fos.close();
-            File file = new File(mFolerName + mPictureFileName);
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                final Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-                final Uri contentUri = Uri.fromFile(file);
-                scanIntent.setData(contentUri);
-                getContext().sendBroadcast(scanIntent);
-            } else {
-                final Intent intent = new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory()));
-                getContext().sendBroadcast(intent);
-            }
-            if ( mCameraCallback != null )
-                mCameraCallback.onResult(file.getAbsolutePath());
-
-        } catch (java.io.IOException e) {
-            Log.e("PictureDemo", "Exception in photoCallback", e);
-        } finally {
-            mCameraCallback = null;
-        }
-    }
 
     public interface CameraCallback {
         void onResult( String fileName );
@@ -111,6 +78,9 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
     private BasicDrawer mBasicDrawer;
 
     private Mat mYuv, mGraySubmat;
+
+    private byte [] rgbbuffer = new byte[256 * 256];
+    private int [] rgbints = new int[256 * 256];
 
     public CameraPreview(Context context) {
         super(context);
@@ -326,7 +296,13 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
+        if ( DEBUG ) Log.e(TAG, String.format("mBlurState : %b", mTestActivity.mBlurState));
 //        if ( DEBUG ) Log.e(TAG, String.format("width : %d, height : %d", mWidth, mHeight));
+
+        if ( mTestActivity.mBlurState ) {
+
+        }
+
         if ( mWidth != 0 && mHeight != 0 ) {
             if ( mYuv == null ) {
                 mYuv = new Mat(mHeight, mWidth, CvType.CV_8UC1);
@@ -417,9 +393,11 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
                         points.add(point4);
 
                         mTestActivity.setPoint(pts);
+                        return;
                     }
                 }
             }
+            mTestActivity.setPoint(null);
         }
     }
     public Camera.Size getCameraSize () {
@@ -443,10 +421,47 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
                         Environment.DIRECTORY_PICTURES) + File.separator + folder;
                 mCamera.setPreviewCallback(null);
                 mCamera.takePicture(null, null, CameraPreview.this);
+//                mCamera.stopPreview();
                 Log.i(TAG, "Taking picture");
             }
         });
+    }
+
+    @Override
+    public void onPictureTaken(byte[] data, Camera camera) {
+        mCamera.stopPreview();
+        File folder = new File(mFolerName);
+        if ( !folder.isDirectory() ) {
+            folder.mkdirs(); //폴더 생성
+        }
 
 
+        // Write the image in a file (in jpeg format)
+        try {
+            FileOutputStream fos = new FileOutputStream(mFolerName + mPictureFileName);
+
+            fos.write(data);
+            fos.close();
+            File file = new File(mFolerName + mPictureFileName);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                final Intent scanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                final Uri contentUri = Uri.fromFile(file);
+                scanIntent.setData(contentUri);
+                getContext().sendBroadcast(scanIntent);
+            } else {
+                final Intent intent = new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://" + Environment.getExternalStorageDirectory()));
+                getContext().sendBroadcast(intent);
+            }
+            if ( mCameraCallback != null )
+                mCameraCallback.onResult(file.getAbsolutePath());
+
+        } catch (java.io.IOException e) {
+            Log.e("PictureDemo", "Exception in photoCallback", e);
+        } finally {
+            mCameraCallback = null;
+            mCamera.startPreview();
+            mCamera.setPreviewCallback(this);
+        }
     }
 }

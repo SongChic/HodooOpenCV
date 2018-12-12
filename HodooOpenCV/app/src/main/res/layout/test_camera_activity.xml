@@ -13,6 +13,13 @@
             android:id="@+id/camera_preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+        <FrameLayout
+            android:visibility="gone"
+            android:id="@+id/overlay"
+            android:alpha="0.7"
+            android:background="@android:color/white"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
         <ImageView
             android:id="@+id/img_preview"
             android:layout_width="match_parent"
@@ -64,7 +71,6 @@
             android:focusable="true"
             tools:ignore="NewApi"
             android:onClick="@{activity::onTakePictureClick}"/>
-
 
     </RelativeLayout>
 

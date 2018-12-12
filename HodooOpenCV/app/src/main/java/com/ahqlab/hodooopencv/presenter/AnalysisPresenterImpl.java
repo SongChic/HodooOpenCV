@@ -442,39 +442,87 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
             litmusMargin = 140;
             litmusWidth = 320;
 
+            long startTime = System.currentTimeMillis();
+            long endTime = System.currentTimeMillis();
+
             for ( int i = 0; i < litmusBoxNum; i++ ) {
                 Point a = new Point(startPoint + litmusSpacing, startY);
                 Point b = new Point( startPoint + litmusSpacing + litmusWidth, startY + litmusHeight );
                 Imgproc.rectangle(resultMat, a, b, new Scalar(0, 0, 255), 5);
-                int x = (int) (a.x + b.x);
+                int x = (int) (a.x + b.x) / 2;
                 int y = (int) (a.y + b.y) /  2;
 
-                int tempX2 = (int) (x - b.x);
-                for (int j = (int) a.x; j < a.x + b.x; j++) {
-                    Point point = new Point(j, y);
-                    Imgproc.circle(resultMat, point, 5, new Scalar(0, 0, 255), 5);
+                int colorCount = 0;
+                float hAverageTotal = 0;
+                float sAverageTotal = 0;
+                float vAverageTotal = 0;
+
+                float hAverage = 0;
+                float sAverage = 0;
+                float vAverage = 0;
+
+                /* 평균을 구하기 위한 for loop (s) */
+                for (int j = (int) a.y; j < b.y; j++) {
+                    for (int k = (int) a.x; k < b.x; k++) {
+//                        Point point = new Point(k, j);
+//                        Imgproc.circle(resultMat, point, 5, new Scalar(0, 0, 255), 5);
+                        double R=0, G=0, B=0;
+                        double[] color = cloneMat.get(j, k);
+
+                        if ( color != null ) {
+                            R = color[0];
+                            G = color[1];
+                            B = color[2];
+                            float[] hsv = new float[3];
+                            Color.RGBToHSV((int) R, (int) G, (int) B, hsv);
+
+                            hAverageTotal += hsv[0];
+                            sAverageTotal += hsv[1];
+                            vAverageTotal += hsv[2];
+//                            HodooFindColor findColor = HodooFindColor.builder().red((int) R).green((int) G).blue((int) B).index(i + 1).hsv(hsv).build();
+//                            colors.add(findColor);
+                        }
+                        colorCount++;
+                    }
                 }
+                hAverage = hAverageTotal / colorCount;
+                sAverage = sAverageTotal / colorCount;
+                vAverage = vAverageTotal / colorCount;
 
-                if ( DEBUG ) return null;
+                float[] hsv = new float[3];
+                hsv[0] = hAverage;
+                hsv[1] = sAverage;
+                hsv[2] = vAverage;
 
-                double R=0, G=0, B=0;
-                double[] color = cloneMat.get(y, x);
+                HodooFindColor findColor = HodooFindColor.builder().index(i + 1).hsv(hsv).build();
+                colors.add(findColor);
 
-                if ( color != null ) {
-                    R = color[0];
-                    G = color[1];
-                    B = color[2];
-                    float[] hsv = new float[3];
-                    Color.RGBToHSV((int) R, (int) G, (int) B, hsv);
-                    HodooFindColor findColor = HodooFindColor.builder().red((int) R).green((int) G).blue((int) B).index(i + 1).hsv(hsv).build();
-                    colors.add(findColor);
-                }
+                if ( DEBUG ) Log.e(TAG, String.format("%d번째 평균 HSV 값 = H : %f, S : %f, V : %f", i, hAverage, sAverage, vAverage));
+                /* 평균을 구하기 위한 for loop (e) */
+                endTime = System.currentTimeMillis();
+
+                litmusSpacing += litmusMargin + litmusWidth;
+                if ( DEBUG ) continue;
+
+//                double R=0, G=0, B=0;
+//                double[] color = cloneMat.get(y, x);
+//
+//                if ( color != null ) {
+//                    R = color[0];
+//                    G = color[1];
+//                    B = color[2];
+//                    float[] hsv = new float[3];
+//                    Color.RGBToHSV((int) R, (int) G, (int) B, hsv);
+//                    HodooFindColor findColor = HodooFindColor.builder().red((int) R).green((int) G).blue((int) B).index(i + 1).hsv(hsv).build();
+//                    colors.add(findColor);
+//                }
 
 
                 Point point = new Point(x, y);
                 Imgproc.circle(resultMat, point, 5, new Scalar(0, 0, 255), 5);
                 litmusSpacing += litmusMargin + litmusWidth;
             }
+            Log.e(TAG, String.format("end time : %d", endTime - startTime));
 //            if ( rotationState ) {
 //                Mat rotation = Imgproc.getRotationMatrix2D(new Point(resultMat.width() / 2, resultMat.height() / 2), 180, 1);
 //                Imgproc.warpAffine(resultMat, resultMat, rotation, new Size(resultMat.cols(), resultMat.rows()));

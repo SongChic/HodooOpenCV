@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="base_url">http://121.183.234.14:7171/hodoo/</string>
+    <string name="base_url">http://121.183.234.14:7171/</string>
     <!--<string name="base_url">http://192.168.10.100:8080/hodoo/</string>-->
 </resources>
