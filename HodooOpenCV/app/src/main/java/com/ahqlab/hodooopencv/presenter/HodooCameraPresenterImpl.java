@@ -40,7 +40,6 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
     public void wrappingProcess(HodooWrapping wrapping) {
 
         MatOfPoint2f approxCurve = new MatOfPoint2f();
-//        Mat inputMat = Imgcodecs.imread(wrapping.getFileName(), Imgcodecs.CV_LOAD_IMAGE_COLOR);
         Mat inputMat = Imgcodecs.imread(wrapping.getFileName(), Imgcodecs.CV_LOAD_IMAGE_COLOR);
 
         Mat grayMat, tempMat, contourMat, inputProcMat, outputProcMat, mTransMat, resultMat;
@@ -89,7 +88,7 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
                 for (int j = 0; j < approxCurve.total(); j++) {
                     if ( DEBUG ) Log.e(TAG, String.format("approxCurve = x : %f, y : %f", approxCurve.toArray()[j].x, approxCurve.toArray()[j].y));
                 }
-                if ( approxCurve.total() >= 4 ) {
+                if ( approxCurve.total() >= 4  && approxCurve.total() < 5) {
                     Point point1 = approxCurve.toArray()[0]; //오른쪽위
                     Point point2 = approxCurve.toArray()[1]; //왼쪽위
                     Point point3 = approxCurve.toArray()[2]; //왼쪽아래
@@ -102,32 +101,32 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
                     inputProcMat.put(0, 0, point2.x, point2.y, point1.x, point1.y, point4.x, point4.y, point3.x, point3.y);
 
                     outputProcMat.put(0, 0, 0, 0, inputMat.cols() - 1, 0, inputMat.cols() - 1, inputMat.rows() - 1, 0, inputMat.rows() - 1);
-
-                    double w1 = Math.sqrt( Math.pow(point4.x - point3.x, 2)
-                            + Math.pow(point4.x - point3.x, 2) );
-                    double w2 = Math.sqrt( Math.pow(point1.x - point2.x, 2)
-                            + Math.pow(point1.x - point2.x, 2) );
-
-                    double h1 = Math.sqrt( Math.pow(point1.y - point4.y, 2)
-                            + Math.pow(point1.y - point4.y, 2) );
-                    double h2 = Math.sqrt( Math.pow(point2.y - point3.y, 2)
-                            + Math.pow(point2.y - point3.y, 2) );
-
-                    double maxWidth = (w1 < w2) ? w1 : w2;
-                    double maxHeight = (h1 < h2) ? h1 : h2;
+//
+//                    double w1 = Math.sqrt( Math.pow(point4.x - point3.x, 2)
+//                            + Math.pow(point4.x - point3.x, 2) );
+//                    double w2 = Math.sqrt( Math.pow(point1.x - point2.x, 2)
+//                            + Math.pow(point1.x - point2.x, 2) );
+//
+//                    double h1 = Math.sqrt( Math.pow(point1.y - point4.y, 2)
+//                            + Math.pow(point1.y - point4.y, 2) );
+//                    double h2 = Math.sqrt( Math.pow(point2.y - point3.y, 2)
+//                            + Math.pow(point2.y - point3.y, 2) );
+//
+//                    double maxWidth = (w1 < w2) ? w1 : w2;
+//                    double maxHeight = (h1 < h2) ? h1 : h2;
 
                     mTransMat = Imgproc.getPerspectiveTransform(inputProcMat, outputProcMat);
                     Imgproc.warpPerspective(inputMat, resultMat, mTransMat, inputMat.size());
 
                     if ( resultMat.width() > resultMat.height() ) {
-                        Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888 );
+                        Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888);
                         Utils.matToBitmap(resultMat, bitmap);
                         mView.setWrappingImg(bitmap);
                     }
-
                 }
             }
         }
+
     }
 
     @Override

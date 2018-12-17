@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.AsyncTask;
 
 import com.ahqlab.hodooopencv.R;
-import com.ahqlab.hodooopencv.http.RetrofitService;
+import com.ahqlab.hodooopencv.http.service.RetrofitService;
 
 import retrofit2.Call;
 import retrofit2.Retrofit;

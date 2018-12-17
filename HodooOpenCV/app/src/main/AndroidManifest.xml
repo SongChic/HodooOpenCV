@@ -27,7 +27,7 @@
         android:supportsRtl="true"
         android:name=".HodooApplication"
         android:theme="@style/AppTheme">
-        <activity android:name=".activity.TestCameraActivity"
+        <activity android:name=".activity.AnalysisActivity"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -35,7 +35,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.AnalysisActivity"/>
+        <activity android:name=".activity.TestCameraActivity"/>
+        <!--<activity android:name=".activity.AnalysisActivity"/>-->
     </application>
 
 </manifest>

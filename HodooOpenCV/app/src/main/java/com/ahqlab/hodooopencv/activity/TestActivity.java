@@ -142,4 +142,9 @@ public class TestActivity extends BaseActivity<TestActivity> {
         System.loadLibrary("native-lib");
     }
     public native void contourProcessing( long matResultAddr, String fileName );
+
+    @Override
+    protected BaseActivity<TestActivity> getActivityClass() {
+        return null;
+    }
 }

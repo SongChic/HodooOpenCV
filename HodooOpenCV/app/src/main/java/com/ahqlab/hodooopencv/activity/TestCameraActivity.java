@@ -1,5 +1,6 @@
 package com.ahqlab.hodooopencv.activity;
 
+import android.animation.Animator;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,6 +9,8 @@ import android.content.pm.ActivityInfo;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.hardware.Camera;
+import android.hardware.SensorManager;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.renderscript.Allocation;
@@ -20,6 +23,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.OrientationEventListener;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -60,6 +64,10 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
 
     private static final int CAMERA_FACING = Camera.CameraInfo.CAMERA_FACING_BACK;
 
+    private OrientationEventListener orientEventListener;
+    private boolean animState = false;
+    int lastAngle = 0;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +83,29 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
         int height = dm.heightPixels;
 
         if ( DEBUG ) Log.e(TAG, String.format("device width : %d, height : %d", width, height));
-
+        orientEventListener = new OrientationEventListener(this,
+                SensorManager.SENSOR_DELAY_NORMAL) {
+            @Override
+            public void onOrientationChanged(int orientation) {
+                int angle = 0;
+                if ( orientation > 315 || orientation < 45 ) {
+                    angle = 0;
+                }
+                // 90
+                else if(orientation >= 45 && orientation < 135) {
+                    angle = 270;
+                }
+                // 180
+                else if(orientation >= 135 && orientation < 225) {
+                    angle = 180;
+                }
+                // 270
+                else if(orientation >= 225 && orientation < 315) {
+                    angle = 90;
+                }
+                rotationIcons(angle);
+            }
+        };
         addContentView(mBasicDrawer, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
@@ -83,6 +113,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
     protected void onResume() {
         super.onResume();
         startCamera();
+        orientEventListener.enable();
     }
 
     private void startCamera () {
@@ -94,14 +125,6 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
     public void setMap (Mat resultMat) {
         Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888 );
         Utils.matToBitmap(resultMat, bitmap);
-
-//        Matrix matrix = new Matrix();
-//        matrix.postRotate(90);
-//
-//        Bitmap resizedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-//        bitmap.recycle();
-
-//        binding.imgPreview.setImageBitmap(bitmap);
     }
     public void setBitmap ( Bitmap bitmap ) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
@@ -124,11 +147,20 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
         mWrapping = HodooWrapping.builder().points(point).build();
         updateView();
     }
+    public void setFocusPoint ( float x, float y ) {
+        mBasicDrawer.setFocusPoint(x, y);
+        updateView();
+    }
+    public void setFocusState ( boolean state ) {
+        mBasicDrawer.setFocusState(state);
+        updateView();
+    }
 
     @Override
     protected void onPause() {
         super.onPause();
         stopCamera();
+        orientEventListener.disable();
     }
 
     static {
@@ -250,5 +282,29 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
         tmpOut.copyTo(outputBitmap);
 
         return outputBitmap;
+    }
+    private void rotationIcons ( int angle ) {
+        if ( lastAngle != angle ) {
+//            if ( !animState ) {
+//                animState = true;
+//                Log.e(TAG, "애니메이션 실행");
+//                Log.e(TAG, String.format("angle : %d", angle));
+//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+//                    binding.autoProcessBtn.animate().rotation(angle).setDuration(500).withLayer().withEndAction(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            animState = false;
+//                        }
+//                    });
+//                }
+//                lastAngle = angle;
+//            }
+
+        }
+    }
+
+    @Override
+    protected BaseActivity<TestCameraActivity> getActivityClass() {
+        return null;
     }
 }

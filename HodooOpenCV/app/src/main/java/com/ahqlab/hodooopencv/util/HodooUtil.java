@@ -1,5 +1,6 @@
 package com.ahqlab.hodooopencv.util;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BlurMaskFilter;
@@ -27,6 +28,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +64,13 @@ public class HodooUtil {
         Mat img1 = Imgcodecs.imread(target, Imgcodecs.CV_LOAD_IMAGE_COLOR);
         Mat img2 = Imgcodecs.imread(filename1, Imgcodecs.CV_LOAD_IMAGE_COLOR);
 
+        Mat gray1 = new Mat();
+        Mat gray2 = new Mat();
+        Imgproc.cvtColor(img1, gray1, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.cvtColor(img2, gray2, Imgproc.COLOR_RGB2GRAY);
+
+
+
         // Declare key point of images
         MatOfKeyPoint keypoints1 = new MatOfKeyPoint();
         MatOfKeyPoint keypoints2 = new MatOfKeyPoint();
@@ -74,12 +83,12 @@ public class HodooUtil {
         DescriptorExtractor extractor = DescriptorExtractor.create(DescriptorExtractor.ORB);
 
         // Detect key points
-        detector.detect(img1, keypoints1);
-        detector.detect(img2, keypoints2);
+        detector.detect(gray1, keypoints1);
+        detector.detect(gray2, keypoints2);
 
         // Extract descriptors
-        extractor.compute(img1, keypoints1, descriptors1);
-        extractor.compute(img2, keypoints2, descriptors2);
+        extractor.compute(gray1, keypoints1, descriptors1);
+        extractor.compute(gray2, keypoints2, descriptors2);
 
         // Definition of descriptor matcher
         DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE_HAMMING);
@@ -127,11 +136,13 @@ public class HodooUtil {
 
         return retVal;
     }
-    public static void compareFeature2 ( String fileName ) {
+    public static int compareFeature2 ( Context context, String fileName ) {
+
         String target = Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "target.jpg";
-        Mat img1 = Imgcodecs.imread(target);
-        Mat img2 = Imgcodecs.imread(fileName);
+
+        Mat img1 = Imgcodecs.imread(target, Imgcodecs.CV_LOAD_IMAGE_COLOR);
+        Mat img2 = Imgcodecs.imread(fileName, Imgcodecs.CV_LOAD_IMAGE_COLOR);
         Mat imgMatches = new Mat();
 
 //        ORB orb = ORB.create();
@@ -200,6 +211,7 @@ public class HodooUtil {
         Features2d.drawMatches(img1, keypoints1, img2, keypoints2, matches, imgMatches, new Scalar(0, 255, 0), new Scalar(255, 0, 0), drawnMatches, Features2d.NOT_DRAW_SINGLE_POINTS);
         Imgcodecs.imwrite(Environment.getExternalStoragePublicDirectory(
                 Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "result.jpg", imgMatches);
+        return retVal;
     }
 
 }

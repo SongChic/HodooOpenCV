@@ -8,16 +8,20 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.hardware.Camera;
 import android.hardware.Camera.Size;
+import android.hardware.camera2.CameraDevice;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.util.Base64;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.ViewGroup;
 
 import com.ahqlab.hodooopencv.activity.TestCameraActivity;
@@ -44,7 +48,7 @@ import java.util.List;
 import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
 import static org.opencv.imgproc.Imgproc.MORPH_ELLIPSE;
 
-public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.PictureCallback {
+public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, Camera.PreviewCallback, Camera.PictureCallback, View.OnTouchListener {
 
     public interface CameraCallback {
         void onResult( String fileName );
@@ -82,6 +86,8 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
     private byte [] rgbbuffer = new byte[256 * 256];
     private int [] rgbints = new int[256 * 256];
 
+    private boolean autoFocusState = false;
+
     public CameraPreview(Context context) {
         super(context);
     }
@@ -105,6 +111,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
         mHolder = mSurfaceView.getHolder();
         mHolder.addCallback(this);
         mBasicDrawer = new BasicDrawer(mContext);
+        mSurfaceView.setOnTouchListener(this);
     }
 
     @Override
@@ -141,6 +148,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
             if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
                 // set the focus mode
                 params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
+//                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
                 // set Camera parameters
                 mCamera.setParameters(params);
             }
@@ -191,6 +199,25 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
                 mCamera.setPreviewDisplay(mHolder);
                 mCamera.setPreviewCallback(this);
                 mCamera.startPreview();
+//                new Handler().postDelayed(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        while (!autoFocusState) {
+//                            mCamera.autoFocus(new Camera.AutoFocusCallback() {
+//                                @Override
+//                                public void onAutoFocus(boolean success, Camera camera) {
+//                                    if ( success )
+//                                        autoFocusState = success;
+//                                }
+//                            });
+//                            try {
+//                                Thread.sleep(5000);
+//                            } catch (InterruptedException e) {
+//                                e.printStackTrace();
+//                            }
+//                        }
+//                    }
+//                }, 5000);
 
                 Camera.Parameters params = mCamera.getParameters();
                 if ( DEBUG ) Log.e(TAG, String.format("preview size width : %d, height : %d", params.getPreviewSize().width, params.getPreviewSize().height));
@@ -296,9 +323,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
 
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
-        if ( DEBUG ) Log.e(TAG, String.format("mBlurState : %b", mTestActivity.mBlurState));
-//        if ( DEBUG ) Log.e(TAG, String.format("width : %d, height : %d", mWidth, mHeight));
-
         if ( mTestActivity.mBlurState ) {
 
         }
@@ -463,5 +487,23 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
             mCamera.startPreview();
             mCamera.setPreviewCallback(this);
         }
+    }
+
+    @Override
+    public boolean onTouch(View v, final MotionEvent event) {
+        if ( DEBUG ) Log.e(TAG, String.format("action : %d", event.getAction()));
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN :
+                mTestActivity.setFocusPoint(event.getX(), event.getY() );
+                mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                    @Override
+                    public void onAutoFocus(boolean success, Camera camera) {
+                        Log.e(TAG, String.format("success : %b", success));
+                        mTestActivity.setFocusState(success);
+                    }
+                });
+                break;
+        }
+        return false;
     }
 }

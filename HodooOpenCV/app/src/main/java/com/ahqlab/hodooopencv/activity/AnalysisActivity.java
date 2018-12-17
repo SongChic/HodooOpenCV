@@ -44,7 +44,7 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
             path = Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_PICTURES ) + File.separator + getString( R.string.app_name ) + File.separator + "test.jpg";
         }
         presenter = new AnalysisPresenterImpl(this);
-        presenter.imageProcessing(path);
+        presenter.imageProcessing(this, path);
 
 
     }
@@ -85,6 +85,11 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
     }
 
     @Override
+    public void setProgressUpdate(double value) {
+
+    }
+
+    @Override
     public void setPresenter(AnalysisPresenter.Precenter presenter) {
 
     }
@@ -94,4 +99,8 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
         System.loadLibrary("native-lib");
     }
 
+    @Override
+    protected BaseActivity<AnalysisActivity> getActivityClass() {
+        return null;
+    }
 }

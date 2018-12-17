@@ -2,6 +2,8 @@ package com.ahqlab.hodooopencv.activity.draw;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -20,8 +22,9 @@ public class BasicDrawer extends View {
     private final static String TAG = BasicDrawer.class.getSimpleName();
     
     RectDrawer drawer = null;
-    Point mPoint;
-    double mX1;
+    private boolean focusState = false;
+    private float x;
+    private float y;
 
     public BasicDrawer(Context context) {
         this(context, null);
@@ -46,6 +49,12 @@ public class BasicDrawer extends View {
     }
     public void setPoint (List<Point> point) {
         drawer.setPoint(point);
+    }
+    public void setFocusState ( boolean state ) {
+        drawer.setFocusState(state);
+    }
+    public void setFocusPoint (float x, float y) {
+        drawer.setFocusPoint(x, y);
     }
     public float getScale() {
         return Math.min(CameraPreview.mWidth / 1920, CameraPreview.mHeight / 1620);

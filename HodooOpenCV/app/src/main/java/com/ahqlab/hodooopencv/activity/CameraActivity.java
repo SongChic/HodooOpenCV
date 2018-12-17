@@ -352,4 +352,8 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
         }
     }
 
+    @Override
+    protected BaseActivity<CameraActivity> getActivityClass() {
+        return null;
+    }
 }

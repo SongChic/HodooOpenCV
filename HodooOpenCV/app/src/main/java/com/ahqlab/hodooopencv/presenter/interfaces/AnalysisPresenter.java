@@ -20,10 +20,11 @@ public interface AnalysisPresenter {
         void setColorList(List<HodooFindColor> colors);
         void toast( String msg );
         void setCombur (List<ComburResult> results);
+        void setProgressUpdate( double value );
     }
 
     interface Precenter extends BasePresenter {
-        void imageProcessing( String path );
+        void imageProcessing( Context context, String path );
         void setImg( Mat inputMat );
         void requestRetrofit(Context context,  List<HodooFindColor> colors);
     }
