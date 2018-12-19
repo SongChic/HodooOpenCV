@@ -1,27 +1,29 @@
 package com.ahqlab.hodooopencv.activity;
 
+import android.app.AlertDialog;
 import android.content.pm.ActivityInfo;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
-import android.util.Log;
+import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
+import android.view.Window;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ahqlab.hodooopencv.R;
-import com.ahqlab.hodooopencv.adapter.ColorListAdapter;
-import com.ahqlab.hodooopencv.adapter.ComburListAdapter;
+import com.ahqlab.hodooopencv.adapter.CustomColorScrollView;
 import com.ahqlab.hodooopencv.base.BaseActivity;
 import com.ahqlab.hodooopencv.databinding.ActivityAnalsisBinding;
 import com.ahqlab.hodooopencv.domain.ComburResult;
 import com.ahqlab.hodooopencv.domain.HodooFindColor;
-import com.ahqlab.hodooopencv.domain.HsvValue;
 import com.ahqlab.hodooopencv.presenter.AnalysisPresenterImpl;
 import com.ahqlab.hodooopencv.presenter.interfaces.AnalysisPresenter;
-import com.ahqlab.hodooopencv.util.HodooUtil;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Rect;
 
 import java.io.File;
 import java.util.List;
@@ -33,12 +35,21 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
     private int litmusBoxNum = 11;
     private AnalysisPresenterImpl presenter;
     private Bitmap displayImg;
+    private List<Rect> mRects;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         binding = DataBindingUtil.setContentView(this, R.layout.activity_analsis);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        TextView title = toolbar.findViewById(R.id.title);
+        title.setText("검출 결과");
+
         String path = getIntent().getStringExtra("path");
         if ( path == null || path.equals("")) {
             path = Environment.getExternalStoragePublicDirectory( Environment.DIRECTORY_PICTURES ) + File.separator + getString( R.string.app_name ) + File.separator + "test.jpg";
@@ -61,10 +72,18 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
     }
 
     @Override
-    public void setColorList(List<HodooFindColor> colors) {
+    public void setColorList(List<HodooFindColor> colors, List<Rect> rects) {
         if ( colors.size() > 0 ) {
-            ColorListAdapter adapter = new ColorListAdapter(this, colors);
-            binding.colorList.setAdapter(adapter);
+            mRects = rects;
+//            ColorListAdapter adapter = new ColorListAdapter(this, colors, rects, new ColorListAdapter.ColorListCallback() {
+//                @Override
+//                public void setOnItemClickListener(int position) {
+//                    binding.resultImg.itemClick(position);
+//                }
+//            });
+//            binding.colorList.setAdapter(adapter);
+            binding.resultImg.setRects(rects);
+
             presenter.requestRetrofit(this, colors);
         }
     }
@@ -76,12 +95,12 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
 
     @Override
     public void setCombur(List<ComburResult> results) {
-        binding.comburList.setItem(results);
-
-//        ComburListAdapter adapter = new ComburListAdapter(this, results);
-//        binding.comburList.setAdapter(adapter);
-
-
+        binding.comburList.setItem(results, new CustomColorScrollView.ColorListCallback() {
+            @Override
+            public void setOnItemClickListener(int position) {
+                binding.resultImg.itemClick(position);
+            }
+        });
     }
 
     @Override
@@ -102,5 +121,15 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
     @Override
     protected BaseActivity<AnalysisActivity> getActivityClass() {
         return null;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home :
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

@@ -208,9 +208,9 @@ public class HodooUtil {
         if ( DEBUG ) Log.e(TAG, String.format("two retVal : %d", retVal));
         MatOfByte drawnMatches = new MatOfByte();
 
-        Features2d.drawMatches(img1, keypoints1, img2, keypoints2, matches, imgMatches, new Scalar(0, 255, 0), new Scalar(255, 0, 0), drawnMatches, Features2d.NOT_DRAW_SINGLE_POINTS);
-        Imgcodecs.imwrite(Environment.getExternalStoragePublicDirectory(
-                Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "result.jpg", imgMatches);
+//        Features2d.drawMatches(img1, keypoints1, img2, keypoints2, matches, imgMatches, new Scalar(0, 255, 0), new Scalar(255, 0, 0), drawnMatches, Features2d.NOT_DRAW_SINGLE_POINTS);
+//        Imgcodecs.imwrite(Environment.getExternalStoragePublicDirectory(
+//                Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "result.jpg", imgMatches);
         return retVal;
     }
 

@@ -11,16 +11,25 @@ import android.widget.TextView;
 import com.ahqlab.hodooopencv.R;
 import com.ahqlab.hodooopencv.domain.HodooFindColor;
 
+import org.opencv.core.Rect;
+
 import java.util.List;
 
 public class ColorListAdapter extends BaseAdapter {
     private Context mContext;
     private List<HodooFindColor> mColors;
     private LayoutInflater mInflater;
+    private List<Rect> mRects;
+    private ColorListCallback mCallback;
+    public interface ColorListCallback {
+        void setOnItemClickListener( int position );
+    }
 
-    public ColorListAdapter ( Context context, List<HodooFindColor> colors ) {
+    public ColorListAdapter (Context context, List<HodooFindColor> colors, List<Rect> rects, ColorListCallback callback) {
         mContext = context;
         mColors = colors;
+        mRects = rects;
+        mCallback = callback;
         mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
     @Override
@@ -39,7 +48,7 @@ public class ColorListAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if ( convertView == null ) {
             convertView = mInflater.inflate(R.layout.item_color, parent, false);
@@ -54,6 +63,13 @@ public class ColorListAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
+        convertView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if ( mCallback != null )
+                    mCallback.setOnItemClickListener(position);
+            }
+        });
         String hex = String.format("#%02x%02x%02x", mColors.get(position).getRed(), mColors.get(position).getGreen(),mColors.get(position).getBlue());
         holder.colorBox.setBackgroundColor(Color.parseColor(hex) );
         holder.index.setText( String.valueOf(mColors.get(position).getIndex()) );

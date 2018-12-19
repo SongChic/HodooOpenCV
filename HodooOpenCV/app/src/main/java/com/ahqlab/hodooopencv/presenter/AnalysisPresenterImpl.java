@@ -76,6 +76,7 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
         private int litmusBoxNum = 11;
         private Mat result;
         private Context mContext;
+        private List<Rect> rectList;
         OpenCVAsync ( Context context ) {
             mContext = context;
         }
@@ -341,47 +342,70 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                     }
                 }
             }
-            //bubble sort
-            for ( int i = 0; i < rects.size() - 1; i++ ) {
-                for ( int j = i + 1; j < rects.size(); j++ ) {
-                    if ( rects.get(i).x > rects.get(j).x ) {
-                        Rect tempRect = rects.get(i);
-                        rects.set(i, rects.get(j));
-                        rects.set(j, tempRect);
-                    }
-                }
-            }
+            rects = sortRect(rects);
 
             if ( rects.size() != litmusBoxNum ) {
                 int avgW = 0, avgH = 0, avgY = 0, avgM = 0;
 
                 /* 겹쳐있는 rect 정리 (s) */
-                for (int i = 0; i < rects.size() - 1; i++)
-                    if ( rects.get(i + 1).x - rects.get(i).x < 100 )
+                int smallW = 1000;
+                for (int i = 0; i < rects.size() - 1; i++){
+                    if (rects.get(i + 1).x - rects.get(i).x < 100)
                         rects.remove(i + 1);
+
+                    if (rects.get(i).width < smallW)
+                        smallW = rects.get(i).width;
+
+                }
                 /* 겹쳐있는 rect 정리 (e) */
 
+                for (int i = 0; i < rects.size(); i++) {
+                    if ( rects.get(i).width > smallW )
+                        rects.get(i).width = smallW;
+                }
+
+                /* 평균값 구하기 (s) */
                 for (int i = 0; i < rects.size(); i++) {
                     avgW += rects.get(i).width;
                     avgH += rects.get(i).height;
                     avgY += rects.get(i).y;
                     if ( i != 0 )
                         avgM += rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width);
-
-                    Point a1, b1;
-                    a1 = new Point(rects.get(i).x, rects.get(i).y);
-                    b1 = new Point(rects.get(i).x + rects.get(i).width, rects.get(i).y + rects.get(i).height);
-                    Imgproc.rectangle(resultMat, a1, b1, new Scalar(0, 0, 255), 5);
                 }
-
                 int cont = rects.size();
                 avgW = avgW / cont;
                 avgH = avgH / cont;
                 avgY = avgY / cont;
                 avgM = avgM / cont;
+                /* 평균값 구하기 (e) */
+
+                /* 비어있는곳 채우기 - 중간부분 (s) */
+                for (int i = 0; i < rects.size() - 1; i++) {
+                    if ( rects.get(i + 1).x  - (rects.get(i).x + rects.get(i).width) > 160 ) {
+                        Rect addRect = new Rect(rects.get(i).x + avgW + avgM, avgY, avgW, avgH);
+                        rects.add(i + 1, addRect);
+                    }
+                    if ( DEBUG ) Log.e(TAG, String.format("gap : %d", rects.get(i + 1).x  - (rects.get(i).x + rects.get(i).width) ));
+                }
+                /* 비어있는곳 채우기 - 중간부분 (e) */
+
+                /* 평균값 구하기 (s) */
+                avgW = avgH = avgM = avgY = 0;
+                for (int i = 0; i < rects.size(); i++) {
+                    avgW += rects.get(i).width;
+                    avgH += rects.get(i).height;
+                    avgY += rects.get(i).y;
+                    if ( i != 0 )
+                        avgM += rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width);
+                }
+                cont = rects.size();
+                avgW = avgW / cont;
+                avgH = avgH / cont;
+                avgY = avgY / cont;
+                avgM = avgM / cont;
+                /* 평균값 구하기 (e) */
 
                 /* 비어있는곳 채우기 - 앞부분 (s) */
-
                 int compareW = rects.get(0).x;
                 int testCnt = 0;
                 List<Rect> addRects = new ArrayList<>();
@@ -392,38 +416,29 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                     if ( compareW < 0 )
                         break;
 
-                    Rect rect = new Rect(compareW, avgY, avgW, avgH);
+                    Rect rect = new Rect(compareW - 20, avgY, avgW, avgH);
                     addRects.add(rect);
                 }
-                List<Rect> tempRects = rects;
-                rects = addRects;
-                for (int i = 0; i < tempRects.size(); i++) {
-                    rects.add(tempRects.get(i));
-                }
-
-                //bubble sort
-                for ( int i = 0; i < rects.size() - 1; i++ ) {
-                    for ( int j = i + 1; j < rects.size(); j++ ) {
-                        if ( rects.get(i).x > rects.get(j).x ) {
-                            Rect tempRect = rects.get(i);
-                            rects.set(i, rects.get(j));
-                            rects.set(j, tempRect);
-                        }
-                    }
-                }
-
+                rects = addRects(rects, addRects);
+                rects = sortRect(rects);
                 /* 비어있는곳 채우기 - 앞부분 (e) */
 
-                /* 비어있는곳 채우기 - 중간부분 (s) */
-                for (int i = 0; i < rects.size() - 1; i++) {
-                    if ( rects.get(i + 1).x  - (rects.get(i).x + rects.get(i).width) > 200 ) {
-                        Rect addRect = new Rect(rects.get(i).x + avgW + avgM, avgY, avgW, avgH);
-                        rects.add(i + 1, addRect);
-                    }
-                    if ( DEBUG ) Log.e(TAG, String.format("gap : %d", rects.get(i + 1).x  - (rects.get(i).x + rects.get(i).width) ));
+                /* 평균값 구하기 (s) */
+                avgW = avgH = avgM = avgY = 0;
+                for (int i = 0; i < rects.size(); i++) {
+                    avgW += rects.get(i).width;
+                    avgH += rects.get(i).height;
+                    avgY += rects.get(i).y;
+                    if ( i != 0 )
+                        avgM += rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width);
                 }
+                cont = rects.size();
+                avgW = avgW / cont;
+                avgH = avgH / cont;
+                avgY = avgY / cont;
+                avgM = avgM / cont;
+                /* 평균값 구하기 (e) */
 
-                /* 비어있는곳 채우기 - 중간부분 (e) */
 
                 /* 비어있는곳 채우기 - 뒷부분 (s) */
                 compareW = rects.get(rects.size() - 1).x;
@@ -439,20 +454,39 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 
                     Rect rect = new Rect(compareW, avgY, avgW, avgH);
                     addRects.add(rect);
-                    Point x, y;
-                    x = new Point(compareW, avgY);
-                    y = new Point(compareW + avgW, avgY + avgH);
-                    Imgproc.rectangle(resultMat, x, y, new Scalar(255, 80, 80), 5);
                 }
+                rects = addRects(rects, addRects);
+                rects = sortRect(rects);
                 /* 비어있는곳 채우기 - 뒷부분 (e) */
 
-                for (int i = 0; i < rects.size(); i++) {
-                    Point x = new Point(rects.get(i).x, rects.get(i).y);
-                    Point y = new Point(rects.get(i).x + rects.get(i).width, rects.get(i).y + rects.get(i).height);
-                    Imgproc.rectangle(resultMat, x, y, new Scalar(0, 0, 255), 5);
+              /* 겹쳐있는 rect 정리 (s) */
+                for (int i = 0; i < rects.size() - 1; i++){
+//                    if ( DEBUG ) Log.e(TAG, String.format("", rects.get(i).height));
+                    if (rects.get(i + 1).x - rects.get(i).x < 100)
+                        rects.remove(i + 1);
                 }
+                /* 겹쳐있는 rect 정리 (e) */
 
-                if ( DEBUG ) Log.e(TAG, String.format("width : %d, margin : %d", avgW, avgM));
+//                for (int i = 0; i < rects.size(); i++) {
+//                    if ( rects.get(i).y - avgY > 10 )
+//                        rects.get(i).y = avgY;
+//                    if ( rects.get(i).height - avgH < 0 )
+//                        rects.get(i).height = avgH;
+//                    if ( DEBUG ) Log.e(TAG, String.format("height : %d", rects.get(i).height - avgH));
+//
+//                }
+
+                if ( DEBUG ) Log.e(TAG, String.format("first x : %d", rects.get(0).x));
+                /* 비정상적인 높이값 보정 (s) */
+                for (int i = 0; i < rects.size(); i++) {
+                    if ( avgY - rects.get(i).y < 0 ) {
+                        Rect rect = new Rect(rects.get(i).x, avgY, rects.get(i).width, avgH);
+                        rects.set(i, rect);
+                    }
+                    if ( DEBUG ) Log.e(TAG, String.format("y 값 : %d", avgY - rects.get(i).y));
+                }
+                /* 비정상적인 높이값 보정 (e) */
+
             }
             /* 높이값 조절 (s) */
 
@@ -478,55 +512,8 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
             if ( rects.size() < 3 )
                 return null;
             onProgressUpdate((double) 20);
-
-            int litmusWidth = 0, startPoint = 0, litmusMargin = 0, totalWidth = 0, totalHeight = 0, totalMargin = 0, tempX = 0, count = 0, startY = 0, litmusHeight = 0, litmusSpacing = 0;
-            for ( int i = 0; i < rects.size(); i++ ) {
-                if ( i == 0 )
-                    startPoint = tempX = rects.get(i).x;
-                else {
-                    if ( rects.get(i).x - rects.get(i -1).x < 10 )
-                        continue;
-                    if ( litmusMargin != 0 && rects.get(i).x - rects.get(i -1).x > litmusMargin * 1.5 )
-                        continue;
-                    if ( ( rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width  )) < 0 )
-                        continue;
-                    litmusMargin = rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width);
-                    totalMargin += litmusMargin;
-                    totalWidth += rects.get(i).width;
-                    totalHeight += rects.get(i).height;
-                    if ( startY == 0 )
-                        startY = rects.get(i).y;
-                    else if ( startY != 0 && startY > rects.get(i).y )
-                        startY = rects.get(i).y;
-                    count++;
-                }
-            }
             onProgressUpdate((double) 30);
-            if ( DEBUG ) Log.e(TAG, String.format("litmusMargin : %d, startX : %d", litmusMargin, startPoint));
             int firstX = 180, firstW = 325, detectPointX = (firstX + firstW) / 2, abs;
-
-//            if ( rects.get(0).x - firstX > 0 )
-//                abs = rects.get(0).x - firstX;
-//            else
-//                abs = firstX - rects.get(0).x;
-//            if ( abs > 100 ) {
-//                Log.e(TAG, "first rect over one hundred");
-//                Rect rect = new Rect(firstX, startY, firstW, litmusHeight);
-//                rects.add(0, rect);
-//            }
-
-            if ( totalWidth == 0 || totalHeight == 0 || count == 0 )
-                return null;
-            litmusWidth = totalWidth / count;
-            litmusHeight = totalHeight / count;
-
-            startPoint = 210;
-            litmusMargin = 200;
-            litmusWidth = 260;
-
-//            startPoint = 180;
-//            litmusMargin = 160;
-//            litmusWidth = 300;
 
             long startTime = System.currentTimeMillis();
             long endTime = System.currentTimeMillis();
@@ -535,13 +522,14 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
             double progressVal = (100 - nowProgress) / (double) litmusBoxNum;
 
 //            Imgproc.cvtColor(cloneMat, cloneMat, Imgproc.COLOR_RGB2BGR);
+            rectList = rects;
+            for ( int i = 0; i < rects.size(); i++ ) {
+                int startX = rects.get(i).x + 50, startY = rects.get(i).y + 50;
+                int endX = rects.get(i).x + rects.get(i).width - 50, endY = rects.get(i).y + rects.get(i).height - 50;
+                Point a = new Point(startX, startY);
+                Point b = new Point(endX, endY);
 
-            for ( int i = 0; i < litmusBoxNum; i++ ) {
-                Point a = new Point(startPoint + litmusSpacing, startY + 40);
-                Point b = new Point( startPoint + litmusSpacing + litmusWidth, startY + litmusHeight - 60 );
-                Imgproc.rectangle(resultMat, a, b, new Scalar(0, 0, 255), 5);
-                int x = (int) (a.x + b.x) / 2;
-                int y = (int) (a.y + b.y) /  2;
+//                Imgproc.rectangle(resultMat, a, b, new Scalar(0, 0, 255), 5);
 
                 int colorCount = 0;
                 float hAverageTotal = 0;
@@ -557,21 +545,12 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 Imgproc.cvtColor(hsvMat, hsvMat, Imgproc.COLOR_BGR2HSV);
 //                if ( DEBUG ) return hsvMat;
                 /* 평균을 구하기 위한 for loop (s) */
-                double[] color = cloneMat.get(y, x);
-                float[] hsv = new float[3];
-                hsv[0] = (float) color[0];
-                hsv[1] = (float) color[1];
-                hsv[2] = (float) color[2];
-
-                if ( DEBUG ) Log.e(TAG, String.format("가운데 HSV 값 = H : %f, S : %f, V : %f", hsv[0], hsv[1], hsv[2]));
-                Point point = new Point(x, y);
-                Imgproc.circle(resultMat, point, 5, new Scalar(0, 0, 255), 5);
 
                 for (int j = (int) a.y; j < b.y; j++) {
                     for (int k = (int) a.x; k < b.x; k++) {
-                        color = cloneMat.get(j, k);
+                        double[] color = cloneMat.get(j, k);
                         if ( color != null ) {
-                            hsv = new float[3];
+                            float[] hsv = new float[3];
                             hsv[0] = (float) color[0];
                             hsv[1] = (float) color[1];
                             hsv[2] = (float) color[2];
@@ -590,7 +569,7 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 sAverage = sAverageTotal / colorCount;
                 vAverage = vAverageTotal / colorCount;
 
-                hsv = new float[3];
+                float[] hsv = new float[3];
                 hsv[0] = hAverage;
                 hsv[1] = sAverage;
                 hsv[2] = vAverage;
@@ -603,38 +582,17 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 if ( DEBUG ) Log.e(TAG, String.format("%d번째 평균 HSV 값 = H : %f, S : %f, V : %f", i, hAverage, sAverage, vAverage));
                 /* 평균을 구하기 위한 for loop (e) */
                 endTime = System.currentTimeMillis();
-//
-                litmusSpacing += litmusMargin + litmusWidth;
-//                if ( DEBUG ) return cloneMat;
-                if ( DEBUG ) continue;
-
-                double R=0, G=0, B=0;
-                color = cloneMat.get(y, x);
-
-                if ( color != null ) {
-                    R = color[0];
-                    G = color[1];
-                    B = color[2];
-                    hsv = new float[3];
-                    Color.RGBToHSV((int) R, (int) G, (int) B, hsv);
-                    if ( DEBUG ) Log.e(TAG, String.format("가운데 HSV 값 = H : %f, S : %f, V : %f", hsv[0], hsv[1], hsv[2]));
-                    findColor = HodooFindColor.builder().red((int) R).green((int) G).blue((int) B).index(i + 1).hsv(hsv).build();
-                    colors.add(findColor);
-                }
-
-//                Point point = new Point(x, y);
-//                Imgproc.circle(resultMat, point, 5, new Scalar(0, 0, 255), 5);
-                litmusSpacing += litmusMargin + litmusWidth;
             }
             Log.e(TAG, String.format("end time : %d", endTime - startTime));
             return resultMat;
+//            return null;
         }
 
         @Override
         protected void onPostExecute(Mat mat) {
             super.onPostExecute(mat);
             mView.setProgressLayout(View.GONE);
-            mView.setColorList(colors);
+            mView.setColorList(colors, rectList);
             setImg(mat);
         }
     }
@@ -927,8 +885,13 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
         double degree = (rad*180)/Math.PI;
         return 90 - degree;
     }
-    public List<Rect> addRects( List<Rect> oldRect, List<Rect> newRect ) {
-
+    public List<Rect> addRects( List<Rect> rects, List<Rect> newRect ) {
+        List<Rect> tempRects = rects;
+        rects = newRect;
+        for (int i = 0; i < tempRects.size(); i++) {
+            rects.add(tempRects.get(i));
+        }
+        return rects;
     }
     private List<Rect> sortRect ( List<Rect> rects ) {
         for ( int i = 0; i < rects.size() - 1; i++ ) {
@@ -940,5 +903,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 }
             }
         }
+        return rects;
     }
 }

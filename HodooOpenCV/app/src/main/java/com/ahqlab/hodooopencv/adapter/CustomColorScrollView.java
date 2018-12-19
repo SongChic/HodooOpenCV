@@ -15,9 +15,14 @@ import com.ahqlab.hodooopencv.R;
 import com.ahqlab.hodooopencv.domain.ComburResult;
 import com.ahqlab.hodooopencv.util.HodooUtil;
 
+import org.opencv.core.Rect;
+
 import java.util.List;
 
 public class CustomColorScrollView extends ScrollView {
+    public interface ColorListCallback {
+        void setOnItemClickListener( int position );
+    }
     public CustomColorScrollView(Context context) {
         this(context, null);
     }
@@ -29,13 +34,20 @@ public class CustomColorScrollView extends ScrollView {
     public CustomColorScrollView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
     }
-    public void setItem (List<ComburResult> colors) {
+    public void setItem (List<ComburResult> colors, final ColorListCallback callback) {
         LinearLayout wrap = new LinearLayout(getContext());
         wrap.setOrientation(LinearLayout.VERTICAL);
 
         LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(HodooUtil.dpToPx(50), ViewGroup.LayoutParams.WRAP_CONTENT);
         for (int i = 0; i < colors.size(); i++) {
             LinearLayout innerWrap = new LinearLayout(getContext());
+            final int finalI = i;
+            innerWrap.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    callback.setOnItemClickListener(finalI);
+                }
+            });
             innerWrap.setBackgroundResource(R.drawable.top_border);
             innerWrap.setPadding(HodooUtil.dpToPx(20), HodooUtil.dpToPx(20), 0, HodooUtil.dpToPx(20));
             innerWrap.setGravity(Gravity.CENTER_VERTICAL);
