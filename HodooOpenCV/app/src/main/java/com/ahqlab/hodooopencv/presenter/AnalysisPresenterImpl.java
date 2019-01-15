@@ -373,10 +373,12 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                         avgM += rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width);
                 }
                 int cont = rects.size();
+
                 avgW = avgW / cont;
                 avgH = avgH / cont;
                 avgY = avgY / cont;
                 avgM = avgM / cont;
+
                 /* 평균값 구하기 (e) */
 
                 /* 비어있는곳 채우기 - 중간부분 (s) */
@@ -522,6 +524,8 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
             double progressVal = (100 - nowProgress) / (double) litmusBoxNum;
 
 //            Imgproc.cvtColor(cloneMat, cloneMat, Imgproc.COLOR_RGB2BGR);
+
+            int startPoint = 180, litmusMargin = 140, litmusWidth = 320;
             rectList = rects;
             for ( int i = 0; i < rects.size(); i++ ) {
                 int startX = rects.get(i).x + 50, startY = rects.get(i).y + 50;
@@ -641,6 +645,7 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 @Override
                 public <T> void onResponse(Response<T> response) {
                     if ( DEBUG ) Log.e(TAG, "debug check");
+
                     HsvValue hsv = (HsvValue) response.body();
 
                     if ( hsv != null ) {
