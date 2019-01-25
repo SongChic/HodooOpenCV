@@ -42,7 +42,40 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
         MatOfPoint2f approxCurve = new MatOfPoint2f();
         Mat inputMat = Imgcodecs.imread(wrapping.getFileName(), Imgcodecs.CV_LOAD_IMAGE_COLOR);
 
+        Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_BGR2RGBA);
+
+
+
+        if ( DEBUG ) Log.e(TAG, String.format("width : %d, height : %d", inputMat.width(), inputMat.height()));
+
         Mat grayMat, tempMat, contourMat, inputProcMat, outputProcMat, mTransMat, resultMat;
+
+        grayMat = tempMat = contourMat = resultMat = new Mat();
+
+
+        inputProcMat = new Mat(4, 1, CvType.CV_32FC2);
+        outputProcMat = new Mat(4, 1, CvType.CV_32FC2);
+
+
+
+        inputProcMat.put(0, 0, wrapping.getTl().x, wrapping.getTl().y, wrapping.getTr().x, wrapping.getTr().y, wrapping.getBr().x, wrapping.getBr().y, wrapping.getBl().x, wrapping.getBl().y);
+
+        outputProcMat.put(0, 0, 0, 0, inputMat.cols() - 1, 0, inputMat.cols() - 1, inputMat.rows() - 1, 0, inputMat.rows() - 1);
+
+        mTransMat = Imgproc.getPerspectiveTransform(inputProcMat, outputProcMat);
+        Imgproc.warpPerspective(inputMat, resultMat, mTransMat, inputMat.size());
+
+        if ( resultMat.width() > resultMat.height() ) {
+            Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(resultMat, bitmap);
+            mView.setWrappingImg(bitmap);
+            return;
+        }
+
+
+        if ( DEBUG ) return;
+
+//        Mat grayMat, tempMat, contourMat, inputProcMat, outputProcMat, mTransMat, resultMat;
         Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_BGR2RGBA);
 
         grayMat = tempMat = contourMat = resultMat = new Mat();
@@ -83,7 +116,8 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
             Imgproc.approxPolyDP(curve, approxCurve, 0.1 * Imgproc.arcLength(curve, true), true); //다각형 검출
 
             Rect rect = Imgproc.boundingRect(cnt);
-            if (rect.width > 300) { // 일정 면적일 경우 실행
+            if ( DEBUG ) Log.e(TAG, String.format("면적 계산 width : %d", rect.width));
+            if (rect.width > 1900) { // 일정 면적일 경우 실행
                 Log.e(TAG, String.format("approxCurve : %d", approxCurve.total()));
                 for (int j = 0; j < approxCurve.total(); j++) {
                     if ( DEBUG ) Log.e(TAG, String.format("approxCurve = x : %f, y : %f", approxCurve.toArray()[j].x, approxCurve.toArray()[j].y));
@@ -122,6 +156,7 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
                         Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888);
                         Utils.matToBitmap(resultMat, bitmap);
                         mView.setWrappingImg(bitmap);
+                        return;
                     }
                 }
             }

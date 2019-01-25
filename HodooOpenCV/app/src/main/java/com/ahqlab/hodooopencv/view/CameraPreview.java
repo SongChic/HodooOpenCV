@@ -385,7 +385,7 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
 //            Mat overlay = mImgInput.clone();
                 mImgInput.copyTo(overlay);
 //                if ( DEBUG ) Log.e(TAG, String.format("width : %d, size : %d", rect.width, approxCurve.total()));
-                if ( rect.width > 300 && rect.width != 1920 ) { // 일정 면적일 경우 실행
+                if ( rect.width > 300 ) { // 일정 면적일 경우 실행
                     int size = (int) approxCurve.total();
                     if ( size >= 4 ) {
                         List<Point> points = new ArrayList<>();
@@ -505,5 +505,11 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
                 break;
         }
         return false;
+    }
+    public int getPreviewWidth () {
+        return mWidth;
+    }
+    public int getPreviewHeight() {
+        return mHeight;
     }
 }

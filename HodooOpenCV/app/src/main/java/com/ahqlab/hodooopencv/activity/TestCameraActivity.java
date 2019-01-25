@@ -33,6 +33,7 @@ import android.widget.Toast;
 import com.ahqlab.hodooopencv.R;
 import com.ahqlab.hodooopencv.activity.draw.BasicDrawer;
 import com.ahqlab.hodooopencv.base.BaseActivity;
+import com.ahqlab.hodooopencv.databinding.LayoutBtnBinding;
 import com.ahqlab.hodooopencv.databinding.TestCameraActivityBinding;
 import com.ahqlab.hodooopencv.domain.HodooWrapping;
 import com.ahqlab.hodooopencv.presenter.HodooCameraPresenterImpl;
@@ -49,14 +50,16 @@ import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
 
 public class TestCameraActivity extends BaseActivity<TestCameraActivity> implements HodooCameraPresenter.VIew {
     TestCameraActivityBinding binding;
+    LayoutBtnBinding btnBinding;
 
     private HodooWrapping mWrapping;
     private HodooCameraPresenter.Precenter mPrecenter;
 
-    CameraPreview mCameraPreview;
+    public static CameraPreview mCameraPreview;
     BasicDrawer mBasicDrawer;
-    private int mDeviceWidth;
-    private int mDeviceHeight;
+    public static int mDeviceWidth;
+    public static int mDeviceHeight;
+
     private List<Point> mPoints;
 
     private Bitmap warppingResult;
@@ -79,10 +82,10 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
         mPrecenter = new HodooCameraPresenterImpl(this);
 
         DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
-        int width = dm.widthPixels;
-        int height = dm.heightPixels;
+        mDeviceWidth = dm.widthPixels;
+        mDeviceHeight = dm.heightPixels;
 
-        if ( DEBUG ) Log.e(TAG, String.format("device width : %d, height : %d", width, height));
+        if ( DEBUG ) Log.e(TAG, String.format("device width : %d, height : %d", mDeviceWidth, mDeviceHeight));
         orientEventListener = new OrientationEventListener(this,
                 SensorManager.SENSOR_DELAY_NORMAL) {
             @Override
@@ -106,7 +109,13 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
                 rotationIcons(angle);
             }
         };
+
         addContentView(mBasicDrawer, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+
+        LayoutInflater inflater = getLayoutInflater();
+        btnBinding = DataBindingUtil.inflate(inflater, R.layout.layout_btn, null, false);
+        btnBinding.setActivity(this);
+        addContentView(btnBinding.getRoot(), new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
     }
 
     @Override
@@ -172,17 +181,17 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
             @Override
             public void onResult(String fileName) {
                 mWrapping.setFileName(fileName);
-                mWrapping.setTr(mPoints.get(0));
-                mWrapping.setTl(mPoints.get(1));
-                mWrapping.setBl(mPoints.get(2));
-                mWrapping.setBr(mPoints.get(3));
+                mWrapping.setTl( new Point(1550, 700) );
+                mWrapping.setTr( new Point(3800, 700) );
+                mWrapping.setBl( new Point(1550, 2300) );
+                mWrapping.setBr( new Point(3800, 2300) );
                 mPrecenter.wrappingProcess(mWrapping);
             }
         });
     }
 
     @Override
-    public void setWrappingImg(Bitmap resultMat) {
+    public void setWrappingImg(final Bitmap resultMat) {
         Log.e(TAG, "setWrappingImg start");
 
         final Dialog dialog = new Dialog(this);
@@ -214,7 +223,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
             @Override
             public void onClick(View v) {
                 if ( warppingResult != null ) {
-                    mPrecenter.saveWrappingImg(TestCameraActivity.this, warppingResult);
+                    mPrecenter.saveWrappingImg(TestCameraActivity.this, resultMat);
                     dialog.dismiss();
                 }
             }
@@ -301,6 +310,10 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
 //            }
 
         }
+    }
+
+    public static double getScale () {
+        return Math.min( (double) mDeviceHeight / mCameraPreview.getPreviewWidth(), (double) mDeviceWidth / mCameraPreview.getPreviewHeight() );
     }
 
     @Override

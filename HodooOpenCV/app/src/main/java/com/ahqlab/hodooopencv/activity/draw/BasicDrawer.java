@@ -2,11 +2,8 @@ package com.ahqlab.hodooopencv.activity.draw;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 import com.ahqlab.hodooopencv.view.CameraPreview;
@@ -15,13 +12,13 @@ import org.opencv.core.Point;
 
 import java.util.List;
 
-import static com.ahqlab.hodooopencv.constant.HodooConstant.DEBUG;
-
 public class BasicDrawer extends View {
 
     private final static String TAG = BasicDrawer.class.getSimpleName();
     
     RectDrawer drawer = null;
+    MaskRectDrawer maskRectDrawer = null;
+
     private boolean focusState = false;
     private float x;
     private float y;
@@ -40,15 +37,18 @@ public class BasicDrawer extends View {
     }
     private void init() {
         drawer = new RectDrawer(this);
+        maskRectDrawer = new MaskRectDrawer(1440, 2560);
         setWillNotDraw(false);
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         drawer.draw(canvas);
+        maskRectDrawer.draw(canvas);
     }
     public void setPoint (List<Point> point) {
         drawer.setPoint(point);
+        maskRectDrawer.setPoint(point);
     }
     public void setFocusState ( boolean state ) {
         drawer.setFocusState(state);

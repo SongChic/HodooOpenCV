@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.ahqlab.hodooopencv.R;
+import com.ahqlab.hodooopencv.constant.HodooConstant;
 import com.ahqlab.hodooopencv.domain.ComburResult;
 import com.ahqlab.hodooopencv.domain.HodooFindColor;
 import com.ahqlab.hodooopencv.domain.HsvValue;
@@ -53,6 +54,8 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
     private final static String TAG = AnalysisPresenterImpl.class.getSimpleName();
     private AnalysisPresenter.VIew mView;
     private Mat originalMat;
+    private int result = 0;
+
     public AnalysisPresenterImpl ( AnalysisPresenter.VIew view ) {
         mView = view;
         mView.setPresenter(this);
@@ -74,9 +77,9 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
     private class OpenCVAsync extends AsyncTask<Mat, Double, Mat> {
         private List<HodooFindColor> colors;
         private int litmusBoxNum = 11;
-        private Mat result;
         private Context mContext;
         private List<Rect> rectList;
+
         OpenCVAsync ( Context context ) {
             mContext = context;
         }
@@ -98,11 +101,10 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 
             Mat inputMat = mats[0];
 
-            originalMat = result = new Mat();
+            originalMat= new Mat();
             inputMat.copyTo(originalMat);
-            inputMat.copyTo(result);
             //이미지에 대한 특징점 찾기 (s)
-            int feature = HodooUtil.compareFeature2(mContext, Environment.getExternalStoragePublicDirectory(
+            int feature = HodooUtil.compareFeature(Environment.getExternalStoragePublicDirectory(
                     Environment.DIRECTORY_PICTURES) + File.separator + "HodooOpenCV" + File.separator + "test.jpg");
 //
             if ( DEBUG ) Log.e(TAG, String.format("feature : %d", feature));
@@ -111,6 +113,8 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 if ( DEBUG ) Log.e(TAG, "Tow images are same.");
             } else {
                 if ( DEBUG ) Log.e(TAG, "Tow images are different.");
+                result = HodooConstant.NOT_MATCH;
+                return originalMat;
             }
             //이미지에 대한 특징점 찾기 (e)
 
@@ -145,6 +149,7 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
             contourMat = cannyMat.clone();
             List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
             Imgproc.findContours(contourMat, contours, hovIMG, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+
             /* 이미지 외곽선 찾기(e) */
             for (int i = 0; i < contours.size(); i++) {
                 MatOfPoint cnt = contours.get(i);
@@ -275,22 +280,32 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                     /* 사각 프레임 기울기 계산 및 회전 적용 (s) */
                     if ( Math.abs(angle) > 10 )
                         angle = -0.7;
+
+
+//                    angle = 0;
                     Mat rotation = Imgproc.getRotationMatrix2D(new Point(rotationMat.width() / 2, rotationMat.height() / 2), angle, 1);
                     Imgproc.warpAffine(rotationMat, rotationMat, rotation, new Size(rotationMat.cols(), rotationMat.rows()));
                     /* 사각 프레임 기울기 계산 및 회전 적용 (s) */
 
-                    Imgproc.circle(originalMat, bl, 50, new Scalar(255, 0, 0), 20);
-                    Imgproc.circle(originalMat, br, 50, new Scalar(0, 255, 0), 20);
+//                    Imgproc.circle(originalMat, bl, 50, new Scalar(255, 0, 0), 20);
+//                    Imgproc.circle(originalMat, br, 50, new Scalar(0, 255, 0), 20);
+//
+//                    Imgproc.circle(originalMat, tl, 50, new Scalar(0, 0, 255), 20);
+//                    Imgproc.circle(originalMat, tr, 50, new Scalar(255, 218, 185), 20);
 
-                    Imgproc.circle(originalMat, tl, 50, new Scalar(0, 0, 255), 20);
-                    Imgproc.circle(originalMat, tr, 50, new Scalar(255, 218, 185), 20);
+                    Imgproc.circle(originalMat, new Point(topRightX, topY), 50, new Scalar(255, 0, 0), 20);
 
-
+//                    Imgproc.circle(originalMat, tl, 50, new Scalar(0, 0, 255), 20);
+//                    Imgproc.circle(originalMat, tr, 50, new Scalar(255, 218, 185), 20);
 
                     Mat crop;
                     tempMat = new Mat();
 
-                    Rect roi = new Rect(0, (int) topY, rotationMat.width(), rectHeight);
+                    if ( DEBUG ) Log.e(TAG, String.format("topY : %f, bottom : %f", topY, topY + rectHeight));
+
+                    Rect roi = new Rect((int) topLeftX, (int) topY, (int) (topRightX - topLeftX ), rectHeight);
+
+
 
                     if ( DEBUG ) Log.e(TAG, String.format("crop point = topY : %.0f, %d", topY, rectHeight));
 //                    if ( 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= inputMat.cols() && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= inputMat.rows() ) {
@@ -322,7 +337,7 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
             Imgproc.dilate(tempMat, tempMat, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(4, 4)), new Point(-1, -1), 3);
             Imgproc.erode(tempMat, tempMat, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(2, 2)), new Point(-1, -1), 3);
 
-
+//            if ( DEBUG ) return tempMat;
 
             contours = new ArrayList<>();
             approxCurve = new MatOfPoint2f();
@@ -342,194 +357,52 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                     }
                 }
             }
-            rects = sortRect(rects);
-
-            if ( rects.size() != litmusBoxNum ) {
-                int avgW = 0, avgH = 0, avgY = 0, avgM = 0;
-
-                /* 겹쳐있는 rect 정리 (s) */
-                int smallW = 1000;
-                for (int i = 0; i < rects.size() - 1; i++){
-                    if (rects.get(i + 1).x - rects.get(i).x < 100)
-                        rects.remove(i + 1);
-
-                    if (rects.get(i).width < smallW)
-                        smallW = rects.get(i).width;
-
-                }
-                /* 겹쳐있는 rect 정리 (e) */
-
-                for (int i = 0; i < rects.size(); i++) {
-                    if ( rects.get(i).width > smallW )
-                        rects.get(i).width = smallW;
-                }
-
-                /* 평균값 구하기 (s) */
-                for (int i = 0; i < rects.size(); i++) {
-                    avgW += rects.get(i).width;
-                    avgH += rects.get(i).height;
-                    avgY += rects.get(i).y;
-                    if ( i != 0 )
-                        avgM += rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width);
-                }
-                int cont = rects.size();
-
-                avgW = avgW / cont;
-                avgH = avgH / cont;
-                avgY = avgY / cont;
-                avgM = avgM / cont;
-
-                /* 평균값 구하기 (e) */
-
-                /* 비어있는곳 채우기 - 중간부분 (s) */
-                for (int i = 0; i < rects.size() - 1; i++) {
-                    if ( rects.get(i + 1).x  - (rects.get(i).x + rects.get(i).width) > 160 ) {
-                        Rect addRect = new Rect(rects.get(i).x + avgW + avgM, avgY, avgW, avgH);
-                        rects.add(i + 1, addRect);
-                    }
-                    if ( DEBUG ) Log.e(TAG, String.format("gap : %d", rects.get(i + 1).x  - (rects.get(i).x + rects.get(i).width) ));
-                }
-                /* 비어있는곳 채우기 - 중간부분 (e) */
-
-                /* 평균값 구하기 (s) */
-                avgW = avgH = avgM = avgY = 0;
-                for (int i = 0; i < rects.size(); i++) {
-                    avgW += rects.get(i).width;
-                    avgH += rects.get(i).height;
-                    avgY += rects.get(i).y;
-                    if ( i != 0 )
-                        avgM += rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width);
-                }
-                cont = rects.size();
-                avgW = avgW / cont;
-                avgH = avgH / cont;
-                avgY = avgY / cont;
-                avgM = avgM / cont;
-                /* 평균값 구하기 (e) */
-
-                /* 비어있는곳 채우기 - 앞부분 (s) */
-                int compareW = rects.get(0).x;
-                int testCnt = 0;
-                List<Rect> addRects = new ArrayList<>();
-                while (compareW > 0) {
-                    compareW  = compareW - (avgW + avgM);
-                    testCnt++;
-                    if ( DEBUG ) Log.e(TAG, String.format("testCnt : %d, compareW : %d", testCnt, compareW));
-                    if ( compareW < 0 )
-                        break;
-
-                    Rect rect = new Rect(compareW - 20, avgY, avgW, avgH);
-                    addRects.add(rect);
-                }
-                rects = addRects(rects, addRects);
-                rects = sortRect(rects);
-                /* 비어있는곳 채우기 - 앞부분 (e) */
-
-                /* 평균값 구하기 (s) */
-                avgW = avgH = avgM = avgY = 0;
-                for (int i = 0; i < rects.size(); i++) {
-                    avgW += rects.get(i).width;
-                    avgH += rects.get(i).height;
-                    avgY += rects.get(i).y;
-                    if ( i != 0 )
-                        avgM += rects.get(i).x - (rects.get(i -1).x + rects.get(i - 1).width);
-                }
-                cont = rects.size();
-                avgW = avgW / cont;
-                avgH = avgH / cont;
-                avgY = avgY / cont;
-                avgM = avgM / cont;
-                /* 평균값 구하기 (e) */
+            List<Rect> newRect = new ArrayList<>();
 
 
-                /* 비어있는곳 채우기 - 뒷부분 (s) */
-                compareW = rects.get(rects.size() - 1).x;
-                testCnt = 0;
-                addRects = new ArrayList<>();
-                if ( DEBUG ) Log.e(TAG, String.format("====================================================\nwidth : %d", resultMat.width()));
-                while (compareW + (avgW + avgM) < resultMat.width()) {
-                    compareW  = compareW + (avgW + avgM);
-                    testCnt++;
-                    if ( DEBUG ) Log.e(TAG, String.format("testCnt : %d, compareW : %d", testCnt, compareW + (avgW + avgM)));
-                    if ( compareW + (avgW + avgM) > resultMat.width() )
-                        break;
+            //전체 넓이
+            int matWidth = roi.width();
+            //전체 높이
+            int matHeight = roi.height();
 
-                    Rect rect = new Rect(compareW, avgY, avgW, avgH);
-                    addRects.add(rect);
-                }
-                rects = addRects(rects, addRects);
-                rects = sortRect(rects);
-                /* 비어있는곳 채우기 - 뒷부분 (e) */
+//            Imgproc.line(resultMat, new Point(100, 0), new Point(100, matHeight), new Scalar(0, 255, 0), 5);
+//            Imgproc.line(resultMat, new Point(matWidth - 100, 0), new Point(matWidth - 100, matHeight), new Scalar(0, 255, 0), 5);
 
-              /* 겹쳐있는 rect 정리 (s) */
-                for (int i = 0; i < rects.size() - 1; i++){
-//                    if ( DEBUG ) Log.e(TAG, String.format("", rects.get(i).height));
-                    if (rects.get(i + 1).x - rects.get(i).x < 100)
-                        rects.remove(i + 1);
-                }
-                /* 겹쳐있는 rect 정리 (e) */
+            int litmusWidth = (matWidth - 180) / litmusBoxNum,
+                litmusSpacing = 100;
 
-//                for (int i = 0; i < rects.size(); i++) {
-//                    if ( rects.get(i).y - avgY > 10 )
-//                        rects.get(i).y = avgY;
-//                    if ( rects.get(i).height - avgH < 0 )
-//                        rects.get(i).height = avgH;
-//                    if ( DEBUG ) Log.e(TAG, String.format("height : %d", rects.get(i).height - avgH));
+
+            int width = 200, margin = 0, xPosition = 200, yPosition = resultMat.height() / 2 - 70, height = 200, marginVal = 225;
+            int marginValue = 50, rectWidth = ( matWidth - (100 * 2) ) / litmusBoxNum - marginValue, rectY = (matHeight / 2) - (rectWidth / 2), rectHeight = rectWidth;
+
+//            int wwww = 100;
+//            for (int i = 0; i < litmusBoxNum; i++) {
+//                int center = wwww;
+//                Imgproc.circle(resultMat, new Point(center, matHeight / 2), 25, new Scalar(255, 0, 0), 10);
+//                Imgproc.circle(resultMat, new Point(center + (litmusWidth / 2), matHeight / 2), 25, new Scalar(0, 0, 255), 30);
+//                Imgproc.rectangle(resultMat, new Point(wwww, 0), new Point(wwww + litmusWidth, matHeight), new Scalar(0, 255, 0), 5);
 //
-//                }
-
-                if ( DEBUG ) Log.e(TAG, String.format("first x : %d", rects.get(0).x));
-                /* 비정상적인 높이값 보정 (s) */
-                for (int i = 0; i < rects.size(); i++) {
-                    if ( avgY - rects.get(i).y < 0 ) {
-                        Rect rect = new Rect(rects.get(i).x, avgY, rects.get(i).width, avgH);
-                        rects.set(i, rect);
-                    }
-                    if ( DEBUG ) Log.e(TAG, String.format("y 값 : %d", avgY - rects.get(i).y));
-                }
-                /* 비정상적인 높이값 보정 (e) */
-
-            }
-            /* 높이값 조절 (s) */
-
-            /* 높이값 조절 (e) */
-
-//            if ( DEBUG ) return resultMat;
-
-//            List<Rect> newRects = new ArrayList<>();
-//            for (int i = 0; i < rects.size(); i++) {
-//                if ( i > 0 ) {
-//                    if ( rects.get(i - 1) != null ) {
-//                        if (rects.get(i).x - rects.get(i - 1).x < 100) {
-//                            continue;
-//                        }
-//                    }
-//                }
-//                newRects.add(rects.get(i));
+////                newRect.add( new Rect(wwww, rectY, wwww + (litmusWidth / 2), rectHeight) );
 //
+//                wwww += litmusWidth;
 //            }
-//            rects = newRects;
 
-            if ( DEBUG ) Log.e(TAG, String.format("rects size : %d", rects.size()));
-            if ( rects.size() < 3 )
-                return null;
-            onProgressUpdate((double) 20);
-            onProgressUpdate((double) 30);
-            int firstX = 180, firstW = 325, detectPointX = (firstX + firstW) / 2, abs;
 
-            long startTime = System.currentTimeMillis();
-            long endTime = System.currentTimeMillis();
+            xPosition = 150;
 
-            double nowProgress = 30;
-            double progressVal = (100 - nowProgress) / (double) litmusBoxNum;
+//            int width = 200, margin = 0, xPosition = 310, yPosition = resultMat.height() / 2 - 70, height = 200, marginVal = 120;
+            for (int i = 0; i < litmusBoxNum; i++) {
+//                newRect.add( new Rect(xPosition + margin, yPosition, width, height) );
+                newRect.add( new Rect(xPosition + margin, rectY, rectWidth, rectHeight) );
+//                margin += width + marginVal;
+                margin += rectWidth + marginValue;
+            }
 
-//            Imgproc.cvtColor(cloneMat, cloneMat, Imgproc.COLOR_RGB2BGR);
+            rects = rectList = newRect;
 
-            int startPoint = 180, litmusMargin = 140, litmusWidth = 320;
-            rectList = rects;
             for ( int i = 0; i < rects.size(); i++ ) {
-                int startX = rects.get(i).x + 50, startY = rects.get(i).y + 50;
-                int endX = rects.get(i).x + rects.get(i).width - 50, endY = rects.get(i).y + rects.get(i).height - 50;
+                int startX = rects.get(i).x + 120, startY = rects.get(i).y + 120;
+                int endX = rects.get(i).x + rects.get(i).width - 120, endY = rects.get(i).y + rects.get(i).height - 120;
                 Point a = new Point(startX, startY);
                 Point b = new Point(endX, endY);
 
@@ -580,14 +453,19 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 
                 HodooFindColor findColor = HodooFindColor.builder().index(i + 1).hsv(hsv).build();
                 colors.add(findColor);
-                nowProgress += progressVal;
-                onProgressUpdate(nowProgress);
+
+                if ( Float.isNaN(hAverage) || Float.isNaN(sAverage) || Float.isNaN(vAverage) ) {
+                    result = HodooConstant.RECT_NOT_FOUND;
+                    return null;
+                }
+
 
                 if ( DEBUG ) Log.e(TAG, String.format("%d번째 평균 HSV 값 = H : %f, S : %f, V : %f", i, hAverage, sAverage, vAverage));
                 /* 평균을 구하기 위한 for loop (e) */
-                endTime = System.currentTimeMillis();
+//                endTime = System.currentTimeMillis();
             }
-            Log.e(TAG, String.format("end time : %d", endTime - startTime));
+//            Log.e(TAG, String.format("end time : %d", endTime - startTime));
+            result = HodooConstant.SUCCESS;
             return resultMat;
 //            return null;
         }
@@ -602,9 +480,21 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
     }
     @Override
     public void setImg(Mat inputMat) {
-        if ( inputMat == null ) {
-            inputMat = originalMat.clone();
-            mView.toast("사각형이 검출되지 않았습니다.\n 사진을 다시 찍어주세요.");
+
+        switch ( result ) {
+            case HodooConstant.NOT_MATCH :
+                inputMat = originalMat.clone();
+                mView.toast("호두 제품이 아닙니다.\n호두 제품으로 다시 시도해주세요.");
+                break;
+            case HodooConstant.RECT_NOT_FOUND :
+                inputMat = originalMat.clone();
+                mView.toast("사각형이 검출되지 않았습니다.\n 사진을 다시 찍어주세요.");
+                break;
+            case HodooConstant.LITMUS_NOT_FOUNT :
+                inputMat = originalMat.clone();
+                break;
+            case HodooConstant.SUCCESS :
+                break;
         }
         mView.setImage( convertMatToBitmap(inputMat) );
     }
@@ -728,7 +618,7 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 
                 @Override
                 public void onFailure(String error) {
-                    Log.e(TAG, error);
+//                    Log.e(TAG, error);
                 }
             });
 

@@ -87,8 +87,8 @@ public class ResultImageView extends android.support.v7.widget.AppCompatImageVie
             }
             if ( mFullShowState ) {
                 for (int i = 0; i < mRects.size(); i++) {
-                    org.opencv.core.Point point1 = new org.opencv.core.Point(mRects.get(i).x + 50, mRects.get(i).y + 50);
-                    org.opencv.core.Point point2 = new org.opencv.core.Point(mRects.get(i).x + mRects.get(i).width - 50, mRects.get(i).y + mRects.get(i).height - 50);
+                    org.opencv.core.Point point1 = new org.opencv.core.Point(mRects.get(i).x + 120, mRects.get(i).y + 120);
+                    org.opencv.core.Point point2 = new org.opencv.core.Point(mRects.get(i).x + mRects.get(i).width - 120, mRects.get(i).y + mRects.get(i).height - 120);
 
                     Point cp1 = new android.graphics.Point((int)((point1.x*xScaleFactor)),(int)((point1.y*yScaleFactor)));
                     Point cp2 = new android.graphics.Point((int)((point2.x*xScaleFactor)),(int)((point2.y*yScaleFactor)));
