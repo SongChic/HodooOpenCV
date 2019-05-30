@@ -58,7 +58,6 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
     private Bitmap warppingResult;
     private ImageView mImageView;
     Point point1, point2, point3, point4;
-
     private boolean mBlurState = false;
 
 
@@ -101,22 +100,14 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
 
         binding.hodooCameraView.setMaxFrameSize(720, 480);
         mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
-
-//        DisplayMetrics dm = getApplicationContext().getResources().getDisplayMetrics();
-//
-
-
     }
 
+    /* 카메라의 방향 및 상태를 체크/설정한다. */
     @Override
     public void onCameraViewStarted(int width, int height) {
-
-//        binding.hodooCameraView.setResolution(480, 720);
         Log.e(TAG, String.format("width : %d, height : %d", width, height));
-//        binding.hodooCameraView.camera.setDisplayOrientation(90);
         binding.hodooCameraView.setRotationCamera(90);
         binding.hodooCameraView.getResolutionList();
-//        binding.hodooCameraView.setSize(width, height);
     }
 
     @Override
@@ -124,10 +115,10 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
 
     }
 
+    /* 카메라에서 프레임 값을 받아온다. */
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         mImgInput = inputFrame.rgba();
-//        if ( DEBUG ) return mImgInput;
         mImgGray = inputFrame.gray();
         mImgInput.copyTo(mTargetMat);
 
@@ -136,14 +127,12 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
 
         mRgba = mImgGray.clone();
         Imgproc.GaussianBlur(mImgGray, mRgba, new Size(11, 11), 2);
-        //50, 120
+
         Imgproc.Canny(mRgba, mImgResult, 100, 150); //윤곽선만 가져오기
 //        Imgproc.dilate(mImgResult, mImgResult, new Mat(), new Point(-1, -1), 1); //노이즈 제거
+
         Imgproc.dilate(mImgResult, mImgResult, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(3, 3)), new Point(-1, -1), 3);
         Imgproc.erode(mImgResult, mImgResult, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(1, 1)), new Point(-1, -1), 3);
-
-//        if ( DEBUG ) return mImgResult;
-
         List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
         cIMG = mImgResult.clone();
 
@@ -206,6 +195,7 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
         return (dx1 * dx2 + dy1 * dy2) / Math.sqrt((dx1 * dx1 + dy1 * dy1) * (dx2 * dx2 + dy2 * dy2) + 1e-10);
     }
 
+    /* 클릭 이벤트 */
     public void onClick ( View v ) {
         switch ( v.getId() ) {
             case R.id.take_picture :
@@ -217,27 +207,14 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
                                 @Override
                                 public void run() {
                                     HodooUtil.compareFeature(fileName);
-//                                    if ( DEBUG ) Log.e(TAG, String.format("feature : %d", feature));
 
-
-
-//                                    if ( feature > 0 ) {
-//                                        if ( DEBUG ) Log.e(TAG, "Tow images are same.");
-//                                    } else {
-//                                        if ( DEBUG ) Log.e(TAG, "Tow images are different.");
-//                                    }
-//                                    if ( feature > 0 ) {
-                                        mWrapping.setFileName(fileName);
-                                        mWrapping.setTr(point1);
-                                        mWrapping.setTl(point2);
-                                        mWrapping.setBl(point3);
-                                        mWrapping.setBr(point4);
-                                        mWrapping.setTarget(mTargetMat);
-                                        mPrecenter.wrappingProcess(mWrapping);
-//                                        compareFeature2(fileName);
-//                                    } else {
-//                                        Toast.makeText(CameraActivity.this, "리트머스를 검출하지 못했습니다.\n다시 촬영해주세요.", Toast.LENGTH_SHORT).show();
-//                                    }
+                                    mWrapping.setFileName(fileName);
+                                    mWrapping.setTr(point1);
+                                    mWrapping.setTl(point2);
+                                    mWrapping.setBl(point3);
+                                    mWrapping.setBr(point4);
+                                    mWrapping.setTarget(mTargetMat);
+                                    mPrecenter.wrappingProcess(mWrapping);
 
                                 }
                             });
@@ -260,6 +237,7 @@ public class CameraActivity extends BaseActivity<CameraActivity> implements Came
         System.loadLibrary("native-lib");
     }
 
+    /* 검출된 사각형에 대하여 Wrapping을 시작한다. */
     @Override
     public void setWrappingImg(Bitmap resultMat) {
         Log.e(TAG, "setWrappingImg start");

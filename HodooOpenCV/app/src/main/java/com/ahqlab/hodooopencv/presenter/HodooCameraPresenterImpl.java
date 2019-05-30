@@ -81,26 +81,6 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
         grayMat = tempMat = contourMat = resultMat = new Mat();
         inputMat.copyTo(grayMat);
 
-        /* 테스트 코드 (s) */
-//        inputProcMat = new Mat(4, 1, CvType.CV_32FC2);
-//        outputProcMat = new Mat(4, 1, CvType.CV_32FC2);
-//
-////        inputProcMat.put(0, 0, point2.x, point2.y, point1.x, point1.y, point4.x, point4.y, point3.x, point3.y);
-//        inputProcMat.put(0, 0, wrapping.getTl().x, wrapping.getTl().y, wrapping.getTr().x, wrapping.getTr().y, wrapping.getBr().x, wrapping.getBr().y, wrapping.getBl().x, wrapping.getBl().y);
-//        outputProcMat.put(0, 0, 0, 0, inputMat.cols() - 1, 0, inputMat.cols() - 1, inputMat.rows() - 1, 0, inputMat.rows() - 1);
-//
-//
-//        mTransMat = Imgproc.getPerspectiveTransform(inputProcMat, outputProcMat);
-//        Imgproc.warpPerspective(inputMat, resultMat, mTransMat, inputMat.size());
-//
-//        if ( resultMat.width() > resultMat.height() ) {
-//            Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888 );
-//            Utils.matToBitmap(resultMat, bitmap);
-//            mView.setWrappingImg(bitmap);
-//        }
-//
-//        if ( DEBUG ) return;
-        /* 테스트 코드 (e) */
 
         Imgproc.cvtColor(inputMat, grayMat, Imgproc.COLOR_BGRA2GRAY);
         Imgproc.GaussianBlur(grayMat, grayMat, new Size(11, 11), 2);
@@ -135,19 +115,7 @@ public class HodooCameraPresenterImpl implements HodooCameraPresenter.Precenter 
                     inputProcMat.put(0, 0, point2.x, point2.y, point1.x, point1.y, point4.x, point4.y, point3.x, point3.y);
 
                     outputProcMat.put(0, 0, 0, 0, inputMat.cols() - 1, 0, inputMat.cols() - 1, inputMat.rows() - 1, 0, inputMat.rows() - 1);
-//
-//                    double w1 = Math.sqrt( Math.pow(point4.x - point3.x, 2)
-//                            + Math.pow(point4.x - point3.x, 2) );
-//                    double w2 = Math.sqrt( Math.pow(point1.x - point2.x, 2)
-//                            + Math.pow(point1.x - point2.x, 2) );
-//
-//                    double h1 = Math.sqrt( Math.pow(point1.y - point4.y, 2)
-//                            + Math.pow(point1.y - point4.y, 2) );
-//                    double h2 = Math.sqrt( Math.pow(point2.y - point3.y, 2)
-//                            + Math.pow(point2.y - point3.y, 2) );
-//
-//                    double maxWidth = (w1 < w2) ? w1 : w2;
-//                    double maxHeight = (h1 < h2) ? h1 : h2;
+
 
                     mTransMat = Imgproc.getPerspectiveTransform(inputProcMat, outputProcMat);
                     Imgproc.warpPerspective(inputMat, resultMat, mTransMat, inputMat.size());

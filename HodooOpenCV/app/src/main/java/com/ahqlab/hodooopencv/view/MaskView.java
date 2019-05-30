@@ -70,11 +70,5 @@ public class MaskView extends RelativeLayout {
     private void scaleXandY () {
         double scaledWidth = this.getWidth();
         double scaledHeight = this.getHeight();
-//
-//        double xScaleFactor= scaledWidth/imgbitmap.getWidth();
-//        double yScaleFactor= scaledHeight/imgbitmap.getHeight();
-//
-//        android.graphics.Point canvas_point1 = new android.graphics.Point((int)((point1.x*xScaleFactor)),(int)((point1.y*yScaleFactor)));
-//        android.graphics.Point canvas_point2 = new android.graphics.Point((int)((point2.x*xScaleFactor)),(int)((point2.y*yScaleFactor)));
     }
 }

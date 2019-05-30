@@ -116,17 +116,13 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-// Open an instance of the camera
         if ( mCamera == null ) {
             try {
-                mCamera = Camera.open(mCameraID); // attempt to get a Camera instance
+                mCamera = Camera.open(mCameraID);
             } catch (Exception e) {
-                // Camera is not available (in use or does not exist)
                 Log.e(TAG, "Camera " + mCameraID + " is not available: " + e.getMessage());
             }
 
-
-            // retrieve camera's info.
             Camera.CameraInfo cameraInfo = new Camera.CameraInfo();
             Camera.getCameraInfo(mCameraID, cameraInfo);
 
@@ -141,15 +137,11 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
             mSupportedPreviewSizes =  mCamera.getParameters().getSupportedPreviewSizes();
             requestLayout();
 
-            // get Camera parameters
             Camera.Parameters params = mCamera.getParameters();
 
             List<String> focusModes = params.getSupportedFocusModes();
             if (focusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
-                // set the focus mode
                 params.setFocusMode(Camera.Parameters.FOCUS_MODE_AUTO);
-//                params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE);
-                // set Camera parameters
                 mCamera.setParameters(params);
             }
 
@@ -157,9 +149,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
             try {
 
                 mCamera.setPreviewDisplay(holder);
-
-                // Important: Call startPreview() to start updating the preview
-                // surface. Preview must be started before you can take a picture.
                 mCamera.startPreview();
 
                 mWidth = mCamera.getParameters().getPreviewSize().width;
@@ -176,14 +165,12 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
         if (mHolder.getSurface() == null) {
-            // preview surface does not exist
             Log.d(TAG, "Preview surface does not exist");
             return;
         }
 
 
         if ( mCamera != null ) {
-            // stop preview before making changes
             try {
                 mCamera.stopPreview();
                 Log.d(TAG, "Preview stopped.");
@@ -199,25 +186,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
                 mCamera.setPreviewDisplay(mHolder);
                 mCamera.setPreviewCallback(this);
                 mCamera.startPreview();
-//                new Handler().postDelayed(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        while (!autoFocusState) {
-//                            mCamera.autoFocus(new Camera.AutoFocusCallback() {
-//                                @Override
-//                                public void onAutoFocus(boolean success, Camera camera) {
-//                                    if ( success )
-//                                        autoFocusState = success;
-//                                }
-//                            });
-//                            try {
-//                                Thread.sleep(5000);
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    }
-//                }, 5000);
 
                 Camera.Parameters params = mCamera.getParameters();
                 if ( DEBUG ) Log.e(TAG, String.format("preview size width : %d, height : %d", params.getPreviewSize().width, params.getPreviewSize().height));
@@ -269,7 +237,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
 
         int targetHeight = h;
 
-        // Try to find an size match aspect ratio and size
         for (Size size : sizes) {
             double ratio = (double) size.width / size.height;
             if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
@@ -279,7 +246,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
             }
         }
 
-        // Cannot find the one match the aspect ratio, ignore the requirement
         if (optimalSize == null) {
             minDiff = Double.MAX_VALUE;
             for (Size size : sizes) {
@@ -333,7 +299,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
                 mGraySubmat = mYuv.submat(0, mHeight, 0, mWidth);
             }
             Mat mImgInput = new Mat(mHeight + mHeight / 2, mWidth, CvType.CV_8UC3), mImgGray = new Mat(), mImgResult, mRgba, hovIMG, dsIMG, usIMG, cIMG, croppedMat, mTargetMat = new Mat(), tempMat = new Mat();
-////                        HodooWrapping mWrapping;
             Core.rotate(mGraySubmat, mImgInput, Core.ROTATE_90_CLOCKWISE);
             mImgInput.copyTo(tempMat);
 
@@ -341,21 +306,15 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
 
 
             Imgproc.cvtColor(tempMat, mImgInput, Imgproc.COLOR_GRAY2RGB, 4);
-//            mYuv.copyTo(mImgInput);
-//\
             mTestActivity.setMap(mImgInput);
             Point point1, point2, point3, point4;
-//
             Imgproc.cvtColor(mImgInput, mImgGray, Imgproc.COLOR_RGB2GRAY);
-//
             dsIMG = new Mat();
             usIMG = new Mat();
             hovIMG = new Mat();
             mImgResult = new Mat();
             MatOfPoint2f approxCurve = new MatOfPoint2f();
 
-//                        if ( DEBUG ) Log.e(TAG, "mat convert complete");
-//
             Imgproc.pyrDown(mImgGray, dsIMG, new org.opencv.core.Size(mImgGray.cols() / 2, mImgGray.rows() / 2));
             Imgproc.pyrUp(dsIMG, usIMG, mImgGray.size());
 
@@ -367,12 +326,8 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
             Imgproc.dilate(mImgResult, mImgResult, Imgproc.getStructuringElement(MORPH_ELLIPSE, new org.opencv.core.Size(3, 3)), new Point(-1, -1), 3);
             Imgproc.erode(mImgResult, mImgResult, Imgproc.getStructuringElement(MORPH_ELLIPSE, new org.opencv.core.Size(1, 1)), new Point(-1, -1), 3);
 
-//            mTestActivity.setMap(mImgResult);
-//        if ( DEBUG ) return mImgResult;
-
             List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
             cIMG = mImgResult.clone();
-//            if ( DEBUG ) Log.e(TAG, String.format("width : %d, height : %d", mImgResult.width(), mImgResult.height()));
             Imgproc.findContours(cIMG, contours, hovIMG, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE); //윤곽선 검출
 
             for ( int i = 0; i < contours.size(); i++ ) {
@@ -389,13 +344,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
                     int size = (int) approxCurve.total();
                     if ( size >= 4 ) {
                         List<Point> points = new ArrayList<>();
-//                        mRgba = mImgInput.clone();
-//                                    for ( int j = 0; j < approxCurve.total(); j++ ) {
-//                                        Point point = approxCurve.toArray()[j];
-//                                        points.add(point);
-//                                        Imgproc.circle(overlay, point, 20, new Scalar(255, 0, 0, 0.2), 10, Core.FILLED);
-//                                        Imgproc.putText(overlay, String.valueOf( j + 1 ), point, Core.FONT_HERSHEY_SIMPLEX, 3, new Scalar(255, 0, 0), 3);
-//                                    }
 
                         point1 = approxCurve.toArray()[0];
                         point2 = approxCurve.toArray()[1];
@@ -459,8 +407,6 @@ public class CameraPreview extends ViewGroup implements SurfaceHolder.Callback, 
             folder.mkdirs(); //폴더 생성
         }
 
-
-        // Write the image in a file (in jpeg format)
         try {
             FileOutputStream fos = new FileOutputStream(mFolerName + mPictureFileName);
 

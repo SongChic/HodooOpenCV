@@ -41,57 +41,7 @@ public class HodooJavaCamera extends JavaCameraView implements Camera.PictureCal
     public HodooJavaCamera(Context context, AttributeSet attrs) {
         super(context, attrs);
         camera = mCamera;
-//        mCamera.setDisplayOrientation(90);
-//        ViewGroup.LayoutParams params = this.getLayoutParams();
-//        params.width = 800;
-//
-////        FrameLayout.LayoutParams frameParams = (FrameLayout.LayoutParams) this.getLayoutParams();
-////
-////        frameParams.width = 800; //For argument's sake making this ~double the width of the display. Same result occurs if I use MATCH_PARENT
-//        params.height = FrameLayout.LayoutParams.MATCH_PARENT;
-//        this.setLayoutParams(params);
     }
-
-//    @Override
-//    public void onPreviewFrame(byte[] data, Camera camera) {
-//         Log.d("Camera", "Got a camera frame");
-//        if (isPreviewRunning)  {
-//
-//
-//            Canvas canvas = null;
-//
-//            if (mHolder == null) {
-//                return;
-//            }
-//
-//            try {
-//                synchronized (mHolder) {
-//                    canvas = mHolder.lockCanvas(null);
-//                    int canvasWidth = canvas.getWidth();
-//                    int canvasHeight = canvas.getHeight();
-//
-////                decodeYUV(rgbints, data, width, height);
-//
-//                    // draw the decoded image, centered on canvas
-//                    canvas.drawBitmap(rgbints, 0, width, canvasWidth-((width+canvasWidth)>>1), canvasHeight-((height+canvasHeight)>>1), width, height, false, null);
-//
-//                    // use some color filter
-//                    canvas.drawColor(mMultiplyColor, PorterDuff.Mode.MULTIPLY);
-//
-//                }
-//            }  catch (Exception e){
-//                e.printStackTrace();
-//            } finally {
-//                // do this in a finally so that if an exception is thrown
-//                // during the above, we don't leave the Surface in an
-//                // inconsistent state
-//                if (canvas != null) {
-//                    mHolder.unlockCanvasAndPost(canvas);
-//                }
-//            }
-//        }
-//
-//    }
 
     public void setRotationCamera ( int degree ) {
         mCamera.setDisplayOrientation(degree);

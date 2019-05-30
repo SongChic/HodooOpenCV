@@ -51,6 +51,7 @@ public class RectDrawer {
             }
         }, 3000);
     }
+    /* 이미지를 그린다. */
     public void draw (Canvas canvas) {
         if (focusState) {
             Paint paint = new Paint();

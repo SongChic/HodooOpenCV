@@ -47,7 +47,7 @@ public class BasicDrawer extends View {
         maskRectDrawer.draw(canvas);
     }
     public void setPoint (List<Point> point) {
-        drawer.setPoint(point);
+//        drawer.setPoint(point);
         maskRectDrawer.setPoint(point);
     }
     public void setFocusState ( boolean state ) {

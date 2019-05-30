@@ -72,6 +72,7 @@ public class MaskRectDrawer {
         this.color = color;
     }
 
+    /* 이미지를 그린다. */
     protected void draw(Canvas canvas) {
         mPath.reset();
 

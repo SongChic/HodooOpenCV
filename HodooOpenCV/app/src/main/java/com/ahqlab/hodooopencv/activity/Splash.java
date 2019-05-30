@@ -54,6 +54,7 @@ public class Splash extends BaseActivity<Splash> {
         SharedPreferences pref = getPreferences(MODE_PRIVATE);
         int autoProcess = pref.getInt(HodooConstant.AUTO_PROCESS_KEY, 0);
     }
+    /* 퍼미션 체크를 해준다. */
     private void permissionCheck () {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             for ( int i = 0; i < PERMISSIONS.length; i++ )
@@ -63,6 +64,7 @@ public class Splash extends BaseActivity<Splash> {
                     ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_REQUEST_CODE);
     }
 
+    /* 퍼미션 체크값을 받아온다. */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull final String[] permissions, @NonNull int[] grantResults) {
         int permissionCount = 0;
@@ -104,6 +106,7 @@ public class Splash extends BaseActivity<Splash> {
         }
     }
 
+    /* 퍼미션 체크값을 받아온다. */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -114,8 +117,8 @@ public class Splash extends BaseActivity<Splash> {
     protected BaseActivity<Splash> getActivityClass() {
         return this;
     }
+    /* 카메라 액티비티로 넘어가기전 체크해준다. */
     private void finishLoad() {
-
         File targetFile = getFileStreamPath("target.jpg");
         if (!targetFile.isFile()) {
             copyFile("target.jpg");
@@ -130,8 +133,8 @@ public class Splash extends BaseActivity<Splash> {
         startActivity(new Intent(this, TestCameraActivity.class));
         finish();
     }
+    /* 에셋 파일을 복사해준다. */
     public void copyFile(String srcFile) {
-
         AssetManager assetMgr = this.getAssets();
 
         InputStream is = null;

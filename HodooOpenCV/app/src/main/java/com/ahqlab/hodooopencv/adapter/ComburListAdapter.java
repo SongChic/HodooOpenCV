@@ -70,23 +70,9 @@ public class ComburListAdapter extends BaseAdapter {
         for ( int i = 0; i < mResults.get(position).getImgs().length; i++ ) {
             holder.imgviews[i].setImageResource(mResults.get(position).getImgs()[i]);
         }
-//        for (int i = 0; i < holder.comburColorWrap.getChildCount(); i++) {
-//            holder.comburColorWrap.getChildAt(i).setBackground(null);
-////            ((ComburImageView) holder.comburColorWrap.getChildAt( mResults.get(position).getResultPosition() )).setDrawState(ComburImageView.DRAW_NONE);
-//            if ( mResults.get(position).getResultPosition() == i ) {
-//                holder.comburColorWrap.getChildAt( mResults.get(position).getResultPosition() ).setBackgroundResource(R.drawable.board_rect);
-//                holder.comburColorWrap.getChildAt( mResults.get(position).getResultPosition() ).setPadding(HodooUtil.dpToPx(2), HodooUtil.dpToPx(2), HodooUtil.dpToPx(2), HodooUtil.dpToPx(2));
-//            } else
-//                holder.comburColorWrap.getChildAt( mResults.get(position).getResultPosition() ).setPadding(0, 0, 0, 0);
-//
-//        }
-
-//        holder.imgviews[mResults.get(position).getResultPosition()]
 
         holder.comburTitle.setText(mResults.get(position).getComburTitle());
-//        holder.comburTitle.setText(String.valueOf(mResults.get(position).getResultPosition()));
         holder.resultStr.setText(mResults.get(position).getResultMsg());
-//
         return convertView;
     }
     private class ViewHolder {

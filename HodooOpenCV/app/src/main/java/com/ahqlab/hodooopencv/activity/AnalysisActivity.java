@@ -57,9 +57,9 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
         presenter = new AnalysisPresenterImpl(this);
         presenter.imageProcessing(this, path);
 
-
     }
 
+    /* 결과 화면에 보여질 이미지를 셋팅한다. */
     @Override
     public void setImage(Bitmap img) {
         binding.resultImg.setImageBitmap(img);
@@ -71,19 +71,12 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
         binding.progressWrap.setVisibility(state);
     }
 
+    /* 결과화면에 참조할 리스트를 셋팅한다. */
     @Override
     public void setColorList(List<HodooFindColor> colors, List<Rect> rects) {
         if ( colors.size() > 0 ) {
             mRects = rects;
-//            ColorListAdapter adapter = new ColorListAdapter(this, colors, rects, new ColorListAdapter.ColorListCallback() {
-//                @Override
-//                public void setOnItemClickListener(int position) {
-//                    binding.resultImg.itemClick(position);
-//                }
-//            });
-//            binding.colorList.setAdapter(adapter);
             binding.resultImg.setRects(rects);
-
             presenter.requestRetrofit(this, colors);
         }
     }
@@ -93,6 +86,7 @@ public class AnalysisActivity extends BaseActivity<AnalysisActivity> implements 
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
     }
 
+    /* 결과화면에 참조할 리스트를 셋팅한다. */
     @Override
     public void setCombur(List<ComburResult> results) {
         binding.comburList.setItem(results, new CustomColorScrollView.ColorListCallback() {

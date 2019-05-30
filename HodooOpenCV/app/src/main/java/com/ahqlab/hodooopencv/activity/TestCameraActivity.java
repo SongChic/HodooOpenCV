@@ -125,16 +125,20 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
         orientEventListener.enable();
     }
 
+    /* 카메라 프리뷰를 시작한다. */
     private void startCamera () {
         mCameraPreview = new CameraPreview(this, this, CAMERA_FACING, binding.cameraPreview);
     }
+    /* 카메라 프리뷰를 중지한다. */
     private void stopCamera() {
         mCameraPreview.stopCamera();
     }
+    /* 결과 Mat를 셋팅한다. */
     public void setMap (Mat resultMat) {
         Bitmap bitmap = Bitmap.createBitmap(resultMat.cols(), resultMat.rows(), Bitmap.Config.ARGB_8888 );
         Utils.matToBitmap(resultMat, bitmap);
     }
+    /* 비트맵을 셋팅한다. */
     public void setBitmap ( Bitmap bitmap ) {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN_MR1) {
             if ( bitmap != null ) {
@@ -144,22 +148,26 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
         }
 
     }
+    /* 카메라 프리뷰 위에 그려진 이미지를 갱신해준다. */
     public void updateView () {
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.M)
             mBasicDrawer.postInvalidate();
         else
             mBasicDrawer.invalidate();
     }
+    /* 결과에서 사용하는 포인트를 셋팅한다. */
     public void setPoint (List<Point> point) {
         mBasicDrawer.setPoint(point);
         mPoints = point;
         mWrapping = HodooWrapping.builder().points(point).build();
         updateView();
     }
+    /* 카메라 프리뷰 위에 그려지는 이미지의 상태를 갱신해준다. */
     public void setFocusPoint ( float x, float y ) {
         mBasicDrawer.setFocusPoint(x, y);
         updateView();
     }
+    /* 카메라 프리뷰 위에 그려지는 이미지의 상태를 체크한다. */
     public void setFocusState ( boolean state ) {
         mBasicDrawer.setFocusState(state);
         updateView();
@@ -176,6 +184,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
         System.loadLibrary("opencv_java3");
         System.loadLibrary("native-lib");
     }
+    /* 카메라 촬영 */
     public void onTakePictureClick (View v) {
         mCameraPreview.takePicture(getString(R.string.app_name), "/test.jpg", new CameraPreview.CameraCallback() {
             @Override
@@ -189,7 +198,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
             }
         });
     }
-
+    /* 카메라 촬영한 사진의 대한 Wrapping */
     @Override
     public void setWrappingImg(final Bitmap resultMat) {
         Log.e(TAG, "setWrappingImg start");
@@ -247,7 +256,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
         mBlurState = true;
         Log.e(TAG, "setWrappingImg end");
     }
-
+    /* 결과 이미지를 저장한다. */
     @Override
     public void saveImgResult(boolean state, String path) {
         if ( state ) {
@@ -255,11 +264,6 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
             intent.putExtra("path", path);
             startActivity(intent);
             binding.overlay.setVisibility(View.GONE);
-
-//            if ( mImageView != null ) {
-//                binding.maskView.setVisibility(View.GONE);
-//                mImageView = null;
-//            }
             mBlurState = false;
         } else {
             Toast.makeText(this, "사진 저장에 실패했습니다.\n잠시 후 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
@@ -273,6 +277,7 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
     private static final float BITMAP_SCALE = 0.4f;
     private static final float BLUR_RADIUS = 7.5f;
 
+    /* 카메라 촬영 후 프리뷰를 블러 처리한다. */
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR1)
     public static Bitmap blur(Context context, Bitmap image) {
         int width = Math.round(image.getWidth() * BITMAP_SCALE);
@@ -294,24 +299,9 @@ public class TestCameraActivity extends BaseActivity<TestCameraActivity> impleme
     }
     private void rotationIcons ( int angle ) {
         if ( lastAngle != angle ) {
-//            if ( !animState ) {
-//                animState = true;
-//                Log.e(TAG, "애니메이션 실행");
-//                Log.e(TAG, String.format("angle : %d", angle));
-//                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-//                    binding.autoProcessBtn.animate().rotation(angle).setDuration(500).withLayer().withEndAction(new Runnable() {
-//                        @Override
-//                        public void run() {
-//                            animState = false;
-//                        }
-//                    });
-//                }
-//                lastAngle = angle;
-//            }
-
         }
     }
-
+    /* 기기의 크기를 가져온다. */
     public static double getScale () {
         return Math.min( (double) mDeviceHeight / mCameraPreview.getPreviewWidth(), (double) mDeviceWidth / mCameraPreview.getPreviewHeight() );
     }

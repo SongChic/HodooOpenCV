@@ -64,10 +64,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
     public void imageProcessing(Context context, String path) {
         Mat readMat = readMatImg(path);
 
-//        if ( DEBUG ) Log.e(TAG, String.format("feature : %d", feature));
-
-
-
         Imgproc.cvtColor(readMat, readMat, Imgproc.COLOR_BGR2RGB);
         mView.setImage(convertMatToBitmap(readMat));
         OpenCVAsync async = new OpenCVAsync(context);
@@ -162,8 +158,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                     double topY = 8000, bottomY = 0, topRightX = 0, topLeftX = 800, topLeftY = 0;
                     for (int j = 0; j < numberVertices; j++) {
                         Point point = approxCurve.toArray()[j];
-//                        Imgproc.circle(originalMat, point, 50, new Scalar(255, 0, 0), 10);
-//                        Imgproc.putText(originalMat, String.valueOf(j), point, Core.FONT_HERSHEY_SIMPLEX, 10, new Scalar(255, 0, 0), 3);
                         if ( topY > point.y )
                             topY = point.y;
                         if ( topRightX < point.x) {
@@ -182,8 +176,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                     Point rightBottom = approxCurve.toArray()[0];
                     Point top = approxCurve.toArray()[0];
                     Point temp = null;
-//                    if ( numberVertices < 4 )
-//                        return null;
 
                     Point t1 = new Point( 8000, 8000 );
                     Point t2 = new Point( 8000, 8000 );
@@ -198,16 +190,12 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                             tempPoint = t1;
                             t1 = point;
                         }
-
                         if ( t2.y > point.y ) {
                             if ( t1 != point )
                                 t2 = point;
                             else
                                 t2 = tempPoint;
                         }
-
-
-
                         if ( b1.y < point.y ) {
                             tempPoint = b1;
                             b1 = point;
@@ -219,7 +207,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                             else
                                 b2 = tempPoint;
                         }
-
                     }
                     if ( t2.x > t1.x ) {
                         tr = t2;
@@ -254,8 +241,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                         if ( DEBUG ) Log.e(TAG, String.format("position : %d, x : %f, y : %f, numberVertices : %d", j, point.x, point.y, numberVertices));
 
                     }
-
-//                    startX = testLeftTop;
                     /* 각도 계산을 위한 포인트 계산 (e) */
 
                     int bottom;
@@ -277,26 +262,18 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                         rectHeight = 400;
                         angle  = -1.2f;
                     }
+
+                    if ( DEBUG ) Log.e(TAG, String.format("angle : %f", angle));
                     /* 사각 프레임 기울기 계산 및 회전 적용 (s) */
                     if ( Math.abs(angle) > 10 )
                         angle = -0.7;
 
+                    if ( DEBUG ) Log.e(TAG, String.format("angle : %f", angle));
 
-//                    angle = 0;
                     Mat rotation = Imgproc.getRotationMatrix2D(new Point(rotationMat.width() / 2, rotationMat.height() / 2), angle, 1);
                     Imgproc.warpAffine(rotationMat, rotationMat, rotation, new Size(rotationMat.cols(), rotationMat.rows()));
                     /* 사각 프레임 기울기 계산 및 회전 적용 (s) */
-
-//                    Imgproc.circle(originalMat, bl, 50, new Scalar(255, 0, 0), 20);
-//                    Imgproc.circle(originalMat, br, 50, new Scalar(0, 255, 0), 20);
-//
-//                    Imgproc.circle(originalMat, tl, 50, new Scalar(0, 0, 255), 20);
-//                    Imgproc.circle(originalMat, tr, 50, new Scalar(255, 218, 185), 20);
-
                     Imgproc.circle(originalMat, new Point(topRightX, topY), 50, new Scalar(255, 0, 0), 20);
-
-//                    Imgproc.circle(originalMat, tl, 50, new Scalar(0, 0, 255), 20);
-//                    Imgproc.circle(originalMat, tr, 50, new Scalar(255, 218, 185), 20);
 
                     Mat crop;
                     tempMat = new Mat();
@@ -308,36 +285,27 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 
 
                     if ( DEBUG ) Log.e(TAG, String.format("crop point = topY : %.0f, %d", topY, rectHeight));
-//                    if ( 0 <= roi.x && 0 <= roi.width && roi.x + roi.width <= inputMat.cols() && 0 <= roi.y && 0 <= roi.height && roi.y + roi.height <= inputMat.rows() ) {
                         crop = rotationMat.submat(roi);
                         tempMat = crop.clone();
                         break;
-//                    }
                 }
             }
 
             onProgressUpdate((double) 10);
 
-//            if ( DEBUG ) return originalMat;
             Mat roi = tempMat.clone();
             Mat cloneMat = tempMat.clone();
             resultMat = cloneMat.clone();
 
-
-//            if ( DEBUG ) return resultMat;
-//            if ( DEBUG ) Log.e(TAG, String.format("roi.height() : %d", roi.height()));
             if ( roi.height() < 150 )
                 return null;
 
             Imgproc.cvtColor(tempMat, roi, Imgproc.COLOR_RGB2HSV);
             Imgproc.erode(tempMat, tempMat, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(2, 2)), new Point(-1, -1), 3);
             Core.inRange(roi, new Scalar(15, 15, 15), new Scalar(200, 255, 255), tempMat);
-//            if ( DEBUG ) return tempMat;
             Imgproc.Canny(tempMat, tempMat, 50, 255);
             Imgproc.dilate(tempMat, tempMat, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(4, 4)), new Point(-1, -1), 3);
             Imgproc.erode(tempMat, tempMat, Imgproc.getStructuringElement(MORPH_ELLIPSE, new Size(2, 2)), new Point(-1, -1), 3);
-
-//            if ( DEBUG ) return tempMat;
 
             contours = new ArrayList<>();
             approxCurve = new MatOfPoint2f();
@@ -365,9 +333,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
             //전체 높이
             int matHeight = roi.height();
 
-//            Imgproc.line(resultMat, new Point(100, 0), new Point(100, matHeight), new Scalar(0, 255, 0), 5);
-//            Imgproc.line(resultMat, new Point(matWidth - 100, 0), new Point(matWidth - 100, matHeight), new Scalar(0, 255, 0), 5);
-
             int litmusWidth = (matWidth - 180) / litmusBoxNum,
                 litmusSpacing = 100;
 
@@ -375,26 +340,11 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
             int width = 200, margin = 0, xPosition = 200, yPosition = resultMat.height() / 2 - 70, height = 200, marginVal = 225;
             int marginValue = 50, rectWidth = ( matWidth - (100 * 2) ) / litmusBoxNum - marginValue, rectY = (matHeight / 2) - (rectWidth / 2), rectHeight = rectWidth;
 
-//            int wwww = 100;
-//            for (int i = 0; i < litmusBoxNum; i++) {
-//                int center = wwww;
-//                Imgproc.circle(resultMat, new Point(center, matHeight / 2), 25, new Scalar(255, 0, 0), 10);
-//                Imgproc.circle(resultMat, new Point(center + (litmusWidth / 2), matHeight / 2), 25, new Scalar(0, 0, 255), 30);
-//                Imgproc.rectangle(resultMat, new Point(wwww, 0), new Point(wwww + litmusWidth, matHeight), new Scalar(0, 255, 0), 5);
-//
-////                newRect.add( new Rect(wwww, rectY, wwww + (litmusWidth / 2), rectHeight) );
-//
-//                wwww += litmusWidth;
-//            }
-
 
             xPosition = 150;
 
-//            int width = 200, margin = 0, xPosition = 310, yPosition = resultMat.height() / 2 - 70, height = 200, marginVal = 120;
             for (int i = 0; i < litmusBoxNum; i++) {
-//                newRect.add( new Rect(xPosition + margin, yPosition, width, height) );
                 newRect.add( new Rect(xPosition + margin, rectY, rectWidth, rectHeight) );
-//                margin += width + marginVal;
                 margin += rectWidth + marginValue;
             }
 
@@ -405,8 +355,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                 int endX = rects.get(i).x + rects.get(i).width - 120, endY = rects.get(i).y + rects.get(i).height - 120;
                 Point a = new Point(startX, startY);
                 Point b = new Point(endX, endY);
-
-//                Imgproc.rectangle(resultMat, a, b, new Scalar(0, 0, 255), 5);
 
                 int colorCount = 0;
                 float hAverageTotal = 0;
@@ -431,13 +379,10 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
                             hsv[0] = (float) color[0];
                             hsv[1] = (float) color[1];
                             hsv[2] = (float) color[2];
-//                            Color.RGBToHSV((int) R, (int) G, (int) B, hsv);
 
                             hAverageTotal += hsv[0];
                             sAverageTotal += hsv[1];
                             vAverageTotal += hsv[2];
-//                            HodooFindColor findColor = HodooFindColor.builder().red((int) R).green((int) G).blue((int) B).index(i + 1).hsv(hsv).build();
-//                            colors.add(findColor);
                         }
                         colorCount++;
                     }
@@ -462,12 +407,9 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 
                 if ( DEBUG ) Log.e(TAG, String.format("%d번째 평균 HSV 값 = H : %f, S : %f, V : %f", i, hAverage, sAverage, vAverage));
                 /* 평균을 구하기 위한 for loop (e) */
-//                endTime = System.currentTimeMillis();
             }
-//            Log.e(TAG, String.format("end time : %d", endTime - startTime));
             result = HodooConstant.SUCCESS;
             return resultMat;
-//            return null;
         }
 
         @Override
@@ -621,9 +563,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
 //                    Log.e(TAG, error);
                 }
             });
-
-//            NetworkAsync async = new NetworkAsync(context);
-//            async.execute(hsvValue);
         }
     }
 
@@ -654,123 +593,6 @@ public class AnalysisPresenterImpl implements AnalysisPresenter.Precenter {
         Imgproc.cvtColor(resultMat, resultMat, Imgproc.COLOR_RGBA2RGB);
         return resultMat;
     }
-//    public class NetworkAsync extends AsyncTask<HsvValue, Void, HsvValue> {
-//        private Context mContext;
-//        NetworkAsync ( Context context ) {
-//            mContext = context;
-//        }
-//
-//        @Override
-//        protected HsvValue doInBackground(HsvValue... hsvValues) {
-//            Retrofit retrofit = new Retrofit.Builder()
-//                    .baseUrl(mContext.getString(R.string.base_url))
-//                    .addConverterFactory(GsonConverterFactory.create())
-//                    .build();
-//            RetrofitService service = retrofit.create(RetrofitService.class);
-//            HsvValue hsv = hsvValues[0];
-//            Call<HsvValue> requrest = service.getHsv("color/detector", hsv);
-//            requrest.enqueue(new Callback<HsvValue>() {
-//                @Override
-//                public void onResponse(Call<HsvValue> call, Response<HsvValue> response) {
-//                    HsvValue hsv = response.body();
-//
-//                    if ( hsv != null ) {
-//                        int[] msgResource = {
-//                                R.array.sg_str_arr,
-//                                R.array.ph_str_arr,
-//                                R.array.leu_str_arr,
-//                                R.array.nit_str_arr,
-//                                R.array.pro_str_arr,
-//                                R.array.glu_str_arr,
-//                                R.array.ket_str_arr,
-//                                R.array.ubg_str_arr,
-//                                R.array.bil_str_arr,
-//                                R.array.ery_str_arr,
-//                                R.array.hb_str_arr
-//                        };
-//                        String[] name = {
-//                                "SG",
-//                                "pH",
-//                                "LEU",
-//                                "NIT",
-//                                "PRO",
-//                                "GLU",
-//                                "KET",
-//                                "UBG",
-//                                "BIL",
-//                                "ERY",
-//                                "Hb"
-//                        };
-//                        List<ComburResult> results = new ArrayList<>();
-//                        String[] arr = hsv.toArray();
-//                        for (int i = 0; i < arr.length; i++) {
-//                            int index = Integer.parseInt(arr[i]);
-//                            int position = 0;
-//                            int count = 0;
-//                            String[] msg = mContext.getResources().getStringArray(msgResource[i]);
-//                            if ( i == 0 ) {
-//                                if ( index < 2 )
-//                                    position = 0;
-//                                else if ( index >= 2 && index < 5 )
-//                                    position = 1;
-//                                else
-//                                    position = 2;
-//                            } else if ( i == 1 ) {
-//                                if ( index < 1 )
-//                                    position = 0;
-//                                else if ( index >= 1 && index < 4 )
-//                                    position = 1;
-//                                else
-//                                    position = 2;
-//                            } else if ( i == 3 ) {
-//                                if ( index < 1 )
-//                                    position = 0;
-//                                else
-//                                    position = 1;
-//                            }  else {
-//                                if ( index < 2 )
-//                                    position = 0;
-//                                else if ( index == 2 )
-//                                    position = 1;
-//                                else
-//                                    position = 2;
-//                            }
-//                            ComburResult result = ComburResult.builder()
-//                                    .comburTitle(name[i])
-//                                    .resultMsg(msg[position])
-//                                    .position(i)
-//                                    .resultPosition( Integer.parseInt(arr[i]) )
-//                                    .imgPreStr(name[i].toLowerCase())
-//                                    .resultPosition(Integer.parseInt(arr[i]))
-//                                    .build();
-//                            result.imgSetting(mContext);
-//                            results.add(result);
-//                        }
-//                        mView.setCombur(results);
-//                    } else {
-//                        Log.e(TAG, "server error");
-//                    }
-//
-//                }
-//
-//                @Override
-//                public void onFailure(Call<HsvValue> call, Throwable t) {
-//
-//                }
-//            });
-//            try {
-//                requrest.clone().execute();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            return null;
-//        }
-//
-//        @Override
-//        protected void onPostExecute(HsvValue value) {
-//            super.onPostExecute(value);
-//        }
-//    }
 
     public double getAngle(Point start, Point end) {
         int dx = (int) (end.x - start.x);
